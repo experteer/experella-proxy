@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ["dennis.herr@experteer.com"]
   spec.description   = 'a balancing & routing proxy, see README for more details'
   spec.summary       = 'experella-proxy gem'
-  spec.homepage      = "http://www.experteer.com/"
+  spec.homepage      = "https://github.com/experteer/experella-proxy"
   spec.license       = "MIT"
 
   spec.add_runtime_dependency "daemons", "~> 1.1.4"
