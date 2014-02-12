@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+
+# binary file for developers
+require 'rubygems'
+require 'bundler'
+Bundler.setup
+
+#NOTE: This is exactly the same as /bin/experella-proxy from here
+
+lib = File.expand_path(File.join(File.dirname(__FILE__), '../lib/'))
+
+require 'fileutils'
+
+ARGV << '--help' if ARGV.empty?
+
+if ARGV[0] == "init"
+  if ARGV[1] && File.directory?(File.expand_path(ARGV[1]))
+    source_dir = File.expand_path(File.join(File.dirname(__FILE__), "/../config/default/"))
+    dest_dir = File.join(File.expand_path(ARGV[1]), "proxy")
+    FileUtils.copy_entry source_dir, dest_dir
+    puts "Initialized template config to #{dest_dir}"
+  else
+    puts "ERROR: #{File.expand_path(ARGV[1])} is not a directory"
+    puts "Please provide an existing directory to initialize to as second argument"
+  end
+elsif ["start", "stop", "restart", "reload", "run", "zap", "status"].include? ARGV[0]
+  require 'daemons'
+  Daemons.run(File.join(lib, 'experella-proxy.rb'))
+else
+  unless ARGV[0] == "--help" || ARGV[0] == "-h"
+    puts "ERROR no command given"
+    puts
+  end
+  puts "To control the proxy use: experella-proxy <command> <options> -- <application options>"
+  puts
+  puts "* where <command> is one of Daemons:"
+  puts "  start         start an instance of the application"
+  puts "  stop          stop all instances of the application"
+  puts "  restart       stop all instances and restart them afterwards"
+  puts "  reload        send a SIGHUP to all instances of the application"
+  puts "  run           start the application and stay on top"
+  puts "  zap           set the application to a stopped state"
+  puts "  status        show status (PID) of application instances"
+  puts
+  puts "* and where <options> may contain several of the following:"
+  puts "  -t, --ontop   Stay on top (does not daemonize)"
+  puts "  -f, --force   Force operation"
+  puts "  -n, --no_wait Do not wait for processes to stop"
+  puts
+  puts "* and where <applicaion options> are"
+  puts "  --config=CONFIGFILE   absolute path to the proxy config file"
+  puts
+  puts
+  puts "To initialize the proxy use: experella-proxy init <path>"
+  puts
+  puts "* where <path> is the location the config files get copied to"
+  puts
+  puts "Common options: "
+  puts "  -h, --help    Show this message"
+  puts "  --version     Show daemons version"
+end
+

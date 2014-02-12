@@ -1,0 +1,20 @@
+TODO:
+
+General:
+
+- Benchmarks for readme
+- Configuration routing debugging tool
+
+Performance:
+
+- improve server matching
+    * avoid negative regexp, e.g. add reject option instead of negative accept
+    * group servers which match same requests
+    * probably add a option for "fallback" servers
+
+Features:
+
+- self configuring backends
+    * detect disconnected backends
+- improve middleware support
+- SPDY

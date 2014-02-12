@@ -1,0 +1,15 @@
+#IDE
+
+.idea
+
+#DEV
+.ruby-gemset
+.ruby-version
+
+#LOGS
+*.log
+
+.rspec
+
+Gemfile.lock
+*.gem
