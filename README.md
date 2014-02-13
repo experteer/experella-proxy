@@ -1,6 +1,7 @@
 #Experella-Proxy
 
-A balancing EventMachine reverse proxy based on [em-proxy](https://github.com/igrigorik/em-proxy)
+A balancing EventMachine reverse proxy based on [em-proxy](https://github.com/igrigorik/em-proxy). 
+See our [presentation](http://experteer.github.io/experella-proxy/index.html) for a more detailed overview.
 
 Configurable in pure ruby!
 
@@ -17,7 +18,7 @@ Supports:
 Proxy uses [http_parser](https://github.com/tmm1/http_parser.rb) to parse http data and is thereby subject to the parsers restrictions
 
 The proxy is build for low proxy to server latency and does not support persistent connections to servers. Keep that in mind
-as i can severely influence proxy performance overhead.
+as it can severely influence proxy performance overhead.
 
 It balances for every single http-request and not per client/connection.
 
