@@ -1,5 +1,7 @@
 #Experella-Proxy
 
+[![Gem Version](https://badge.fury.io/rb/experella-proxy.png)](http://badge.fury.io/rb/experella-proxy)
+
 A balancing EventMachine reverse proxy based on [em-proxy](https://github.com/igrigorik/em-proxy). 
 See our [presentation](http://experteer.github.io/experella-proxy/index.html) for a more detailed overview.
 
