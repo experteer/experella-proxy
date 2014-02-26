@@ -144,8 +144,12 @@ module ExperellaProxy
 
         # remove all hop-by-hop header fields
         unless h["Connection"].nil?
-          h["Connection"].each do |s|
-            h.delete(s)
+          if h["Connection"].is_a?(String)
+            h.delete(h["Connection"])
+          else
+            h["Connection"].each do |s|
+              h.delete(s)
+            end
           end
         end
         HOP_HEADERS.each do |s|

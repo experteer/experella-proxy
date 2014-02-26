@@ -2,13 +2,13 @@ module ExperellaProxy
 
   # BackendServer objects contain information on available BackendServers
   #
-  # Accepts Requests based on Request header information matched to it's message_pattern
+  # Accepts Requests based on Request header information and it's message_matcher
   #
   # See {#initialize}
   class BackendServer
 
     attr_accessor :host, :port, :concurrency, :workload, :name
-    attr_reader :message_pattern, :mangle
+    attr_reader :message_matcher, :mangle
 
     # Constructor of the BackendServer
     #
@@ -39,8 +39,8 @@ module ExperellaProxy
     # @param [Hash] options
     # @option options [String] :name name used in logs and for storage. will use Host:Port if no name is specified
     # @option options [String] :concurrency concurrency. will use 1 as default
-    # @option options [Hash|Proc] :accepts  message_pattern for request headers this BackendServer accepts or a lambda where the request is passed
-    #   Keys get symbolized and values create Regexp objects. Empty Hash is default
+    # @option options [Hash|Proc] :accepts  message_pattern that will be converted to a message_matcher or an arbitrary message_matcher as proc
+    #   Empty Hash is default
     # @option options [Hash] :mangle Hash which can modify request headers. Keys get symbolized. nil is default
     def initialize(host, port, options = {})
       @host = host #host URL as string
@@ -53,7 +53,7 @@ module ExperellaProxy
       end
       @workload = 0
 
-      update_message_pattern(options[:accepts])
+      make_message_matcher(options[:accepts])
 
       #mangle can be nil
       @mangle = options[:mangle]
@@ -61,22 +61,21 @@ module ExperellaProxy
       @mangle = @mangle.inject({}) { |memo, (k, v)| memo[k.to_sym] = v; memo } unless @mangle.nil?
     end
 
-    # compares Backend servers accepted message_pattern to request object
+    # compares Backend servers message_matcher to request object
     #
     # @param request [Request] a request object
     # @return [Boolean] true if BackendServer accepts the Request, false otherwise
     def accept?(request)
-      res=@message_pattern.call(request)
+      res=@message_matcher.call(request)
       #puts "#{name} #{request.header['request_url']} #{res}"
       res
     end
 
-    # Updates the message_pattern
+    # Makes a message matching block from the message_pattern.
     #
-    # @param hsh [Hash] hash containing additional message_pattern information. Keys get symbolized and values create
-    #   Regexp objects. Values of duplicate keys will be overwritten
-    def update_message_pattern(obj)
-      @message_pattern =if obj.respond_to?(:call)
+    # @param obj [Hash|Proc] hash containing a message_pattern that will be converted to a message_matcher proc or an arbitrary own message_matcher
+    def make_message_matcher(obj)
+      @message_matcher =if obj.respond_to?(:call)
         obj
       else
         #precompile message pattern keys to symbols and values to regexp objects

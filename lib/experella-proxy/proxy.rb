@@ -53,7 +53,6 @@ module ExperellaProxy
     #
     def self.stop
       if EM.reactor_running?
-        log.info("Terminating experella-proxy")
         EventMachine::stop_event_loop
       end
     end
