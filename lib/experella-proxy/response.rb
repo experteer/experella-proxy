@@ -18,6 +18,8 @@ module ExperellaProxy
       @conn = request.conn
       @header = {}
       @status_code = 500
+      @no_length = false #set true if no content-length or transfer-encoding given
+      @keep_parsing = true #used for special no length case
       @chunked = false # if true the parsed body will be chunked
       @buffer = false # default is false, so incoming data will be streamed,
       # used for http1.0 clients and transfer-encoding chunked backend responses
@@ -35,7 +37,15 @@ module ExperellaProxy
     # @param str [String] data as string
     def <<(str)
       begin
-        @response_parser << str
+        if @keep_parsing
+          offset = @response_parser << str
+
+        #edge case for message without content-length and transfer encoding
+          @conn.send_data str[offset..-1] unless @keep_parsing
+        else
+          @conn.send_data str
+        end
+
       rescue Http::Parser::Error
         log.warn ["Parser error caused by invalid response data", "@#{@conn.signature}"]
         # on error unbind response_parser object, so additional data doesn't get parsed anymore
@@ -128,6 +138,7 @@ module ExperellaProxy
           # if no transfer-encoding and no content-length is present, set Connection: close
           if h["Content-Length"].nil?
             @request.keep_alive = false
+            @no_length = true
             @header[:Connection] = "close"
           end
         #chunked encoded
@@ -144,8 +155,12 @@ module ExperellaProxy
 
         # remove all hop-by-hop header fields
         unless h["Connection"].nil?
-          h["Connection"].each do |s|
-            h.delete(s)
+          if h["Connection"].is_a?(String)
+            h.delete(h["Connection"])
+          else
+            h["Connection"].each do |s|
+              h.delete(s)
+            end
           end
         end
         HOP_HEADERS.each do |s|
@@ -160,7 +175,6 @@ module ExperellaProxy
           via << "1.1 experella"
         end
         @header[:Via] = via
-
 
         update_header(h)
         unless @buffer
@@ -197,8 +211,11 @@ module ExperellaProxy
           @send_buffer << body
           @conn.send_data flush
         end
-      end
 
+        if @no_length
+          @keep_parsing = false
+        end
+      end
     end
   end
 end

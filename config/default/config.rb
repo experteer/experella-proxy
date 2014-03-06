@@ -1,5 +1,5 @@
 #Backend Server
-base_backend_port=(ENV["BASE_PORT"] : 4000).to_i
+base_backend_port=(ENV["BASE_PORT"] || 4000).to_i
 backend1_port=base_backend_port+1
 backend2_port=base_backend_port+2
 
@@ -47,7 +47,7 @@ logger.level = Logger::WARN
 # you can add one pair per call to set_proxy(hsh)
 # additionally you can activate ssl with provided private_key and cert_chain files
 set_proxy(:host => "localhost", :port => base_backend_port)
-set_proxy(:host => "localhost", :port => 443,
+set_proxy(:host => "localhost", :port => base_backend_port + 443,
           :options => {:tls => true,
                        :private_key_file => 'ssl/private/experella-proxy.key',
                        :cert_chain_file => 'ssl/certs/experella-proxy.pem'}

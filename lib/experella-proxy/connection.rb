@@ -105,20 +105,10 @@ module ExperellaProxy
     def connect_backendserver(backend)
       @backend = backend
       connection_manager.free_connection(self)
-      #mangle http header if backend wants to
-      unless @backend.mangle.nil?
-        @backend.mangle.each do |k, v|
-          if v.respond_to?(:call)
-            get_request.update_header({k => v.call(get_request.header[k])})
-          else
-            get_request.update_header({k => v})
-          end
-        end
-      end
-
+      #mangle http headers
+      mangle
       # reconstruct the request header
       get_request.reconstruct_header
-
       #special web support for unknown hosts
       if @backend.name.eql?("web")
         xport = get_request.header[:Host].match(/:[0-9]+/)
@@ -449,8 +439,12 @@ module ExperellaProxy
 
         # remove all hop-by-hop header fields
         unless h["Connection"].nil?
-          h["Connection"].each do |s|
-            h.delete(s)
+          if h["Connection"].is_a?(String)
+            h.delete(h["Connection"])
+          else
+            h["Connection"].each do |s|
+              h.delete(s)
+            end
           end
         end
         HOP_HEADERS.each do |s|
@@ -512,6 +506,20 @@ module ExperellaProxy
         end
       end
 
+    end
+
+    # Mangles http headers based on backend specific mangle configuration
+    #
+    def mangle
+      unless @backend.mangle.nil?
+        @backend.mangle.each do |k, v|
+          if v.respond_to?(:call)
+            get_request.update_header({k => v.call(get_request.header[k])})
+          else
+            get_request.update_header({k => v})
+          end
+        end
+      end
     end
 
     # This method sends the first requests send_buffer to the backend server, if
