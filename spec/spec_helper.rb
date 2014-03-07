@@ -8,6 +8,14 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup
 
+if ENV["COVERAGE"]
+  require "simplecov"
+  SimpleCov.start do
+    add_filter "/spec"
+  end
+end
+
+
 require 'pathname'
 
 LIB_ROOT= Pathname.new(File.dirname(__FILE__) +"/../")

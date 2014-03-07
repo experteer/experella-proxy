@@ -5,10 +5,6 @@ describe ExperellaProxy::Configuration do
     ExperellaProxy.config
   }
 
-  let(:no_config){
-    ExperellaProxy::Configuration.new(:configfile => "")
-  }
-
   it "should load a config file" do
     config.backends.size.should == 4
     config.timeout.should == 6.0

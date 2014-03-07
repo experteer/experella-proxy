@@ -63,6 +63,9 @@ describe ExperellaProxy do
     end
 
     it "should get response from the echoserver via the proxy" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "response"
+      end
       log.info "should get response from the echoserver via the proxy"
       EM.epoll
       EM.run do
@@ -84,6 +87,9 @@ describe ExperellaProxy do
     end
 
     it "should respond with 404" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "404"
+      end
       log.info "should respond with 404"
       EM.epoll
       EM.run do
@@ -124,6 +130,9 @@ describe ExperellaProxy do
     end
 
     it "should respond with 400 on malformed request" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "400"
+      end
       log.info "should respond with 400 on malformed request"
       EM.epoll
       EM.run do
@@ -146,6 +155,9 @@ describe ExperellaProxy do
     end
 
     it "should respond with 503" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "503"
+      end
       log.info "should respond with 503"
       EM.epoll
       EM.run do
@@ -186,6 +198,9 @@ describe ExperellaProxy do
     end
 
     it "should reuse keep-alive connections" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "keep-alive"
+      end
       log.info "should reuse keep-alive connections"
       EM.epoll
       EM.run do
@@ -224,6 +239,9 @@ describe ExperellaProxy do
     end
 
     it "should handle chunked post requests and strip invalid Content-Length" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "chunked-request"
+      end
       log.info "should stream chunked post requests"
       EM.epoll
       EM.run do
@@ -296,6 +314,9 @@ describe ExperellaProxy do
 
     # check echo_server for the response
     it "should rechunk and stream Transfer-Encoding chunked responses" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "chunked-response"
+      end
       log.info "should rechunk and stream Transfer-Encoding chunked responses"
       EM.epoll
       EM.run do
@@ -324,6 +345,9 @@ describe ExperellaProxy do
     end
 
     it "should timeout inactive connections after config.timeout" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "timeout"
+      end
       log.info "should timeout inactive connections after config.timeout"
       EM.epoll
       EM.run do
@@ -363,6 +387,9 @@ describe ExperellaProxy do
 
 
     it "should handle pipelined requests correctly" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "pipelined"
+      end
       log.info "should handle pipelined requests correctly"
       EM.epoll
       EM.run do
@@ -407,6 +434,9 @@ describe ExperellaProxy do
     end
 
     it "should accept requests on all set proxy domains" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "multiproxy"
+      end
       log.info "should accept requests on all set proxy domains"
       EM.epoll
       EM.run do
@@ -446,6 +476,9 @@ describe ExperellaProxy do
     end
 
     it "should be able to handle post requests" do
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = "post"
+      end
       log.info "should be able to handle post requests"
       EM.epoll
       EM.run do

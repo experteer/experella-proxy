@@ -14,7 +14,7 @@ backend( :name => "exp proxy", :host => "127.0.0.11", :port => "7655", :concurre
   :accepts => {"Host" => "experella", "request_url" => "/(#{request_part})($|/)"}
 )
 
-backend( :name => "web", :host => "0.0.0.0", :port => "80", :concurrency => "1000",
+backend( :name => "web", :host_port => "0.0.0.0:80", :concurrency => "1000",
   :accepts => {"Host" => "^((?!(experella|127)).)*$"}
 )
 

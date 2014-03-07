@@ -27,7 +27,7 @@ module ExperellaProxy
     #
     # @param data [String] Opaque response data
     def receive_data(data)
-      log.debug [:receive_backend, @name, data]
+      log.debug [:receive_backend, @name]
       @plexer.relay_from_backend(@name, data)
     end
 

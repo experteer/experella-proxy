@@ -187,7 +187,7 @@ module ExperellaProxy
     # @param data [String] opaque response data
     def relay_from_backend(name, data)
       log.info msec + 'on_response'.ljust(12) + " @" + @signature.to_s + " from #{name}"
-      log.debug msec + "#{name.inspect} " + data
+      log.debug [msec, "#{name.inspect}", data]
       @got_response = true
       data = @on_response.call(name, data) if @on_response
       get_request.response << data
