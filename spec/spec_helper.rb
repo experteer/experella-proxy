@@ -11,7 +11,8 @@ Bundler.setup
 if ENV["COVERAGE"]
   require "simplecov"
   SimpleCov.start do
-    add_filter "/spec"
+    add_group "Proxy", "lib"
+    add_group "Specs", "spec"
   end
 end
 
