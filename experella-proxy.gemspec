@@ -28,6 +28,8 @@ Gem::Specification.new do |spec|
   # documentation tool
   spec.add_development_dependency "yard", "~> 0.8.7.3"
   spec.add_development_dependency "redcarpet", "~> 2.3.0"
+  #code coverage
+  spec.add_development_dependency "simplecov", "~> 0.7.1"
 
   spec.files         = Dir["bin/*"] + Dir["dev/*"] + Dir["lib/**/*"] + Dir["config/default/**/*"]
   spec.files        += Dir["spec/**/*"] + Dir["test/sinatra/*"]

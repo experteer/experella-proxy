@@ -4,7 +4,7 @@ describe ExperellaProxy::BackendServer do
 
   let(:backend) {
     ExperellaProxy::BackendServer.new("host", "port", {:concurrency => "2", :name => "name",
-                                                       :accepts => {"Host" => "experella"},
+                                                       :accepts => {"Host" => "experella", :path => "ella"},
                                                        :mangle => {"Connection" => "close"}
                                                       })
   }
@@ -65,21 +65,42 @@ describe ExperellaProxy::BackendServer do
   describe "#accept?" do
 
 
-    it "returns false if request header " do
+    it "returns false if desired request header missing" do
       request = ExperellaProxy::Request.new("")
       request.update_header(:request_url => "/docs")
       backend.accept?(request).should be_false
     end
 
+
     it "returns false if request headers doesn't match the message_matcher" do
       request = ExperellaProxy::Request.new("")
-      request.update_header(:Host => "google.com", :request_url => "/docs")
+      request.update_header(:Host => "experella.com", :request_url => "/docs")
       backend.accept?(request).should be_false
+      request.uri.update(:path => "godzilla")
+      backend.accept?(request).should be_false
+    end
+
+    it "accepts a block as message matcher" do
+      lambdaBackend = ExperellaProxy::BackendServer.new("host", "port", {:concurrency => "2", :name => "name",
+                                                         :accepts => lambda { |req|
+                                                           if req.header[:Host] == "google.com"
+                                                             true
+                                                           else
+                                                             false
+                                                           end
+                                                         }
+      })
+      request = ExperellaProxy::Request.new("")
+      request.update_header(:Host => "google.com", :request_url => "/docs")
+      lambdaBackend.accept?(request).should be_true
+      request.update_header(:Host => "experella.com", :request_url => "/docs")
+      lambdaBackend.accept?(request).should be_false
     end
 
     it "returns true if full message_matcher finds matches in request headers" do
       request = ExperellaProxy::Request.new("")
-      request.update_header(:Host => "experella.com", :request_url => "/docs")
+      request.update_header(:Host => "experella.com")
+      request.uri.update(:path => "experella")
       backend.accept?(request).should be_true
     end
 

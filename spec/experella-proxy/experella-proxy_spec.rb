@@ -16,7 +16,20 @@ describe ExperellaProxy do
     File.expand_path("../../../bin/experella-proxy", __FILE__)
   }
 
-
+  # static testnames send to spawned experella for simplecov
+  ENV_TESTNAMES = {
+    "should get response from the echoserver via the proxy" => "response",
+    "should respond with 404" => "404",
+    "should respond with 400 on malformed request" => "400",
+    "should respond with 503" => "503",
+    "should reuse keep-alive connections" => "keep-alive",
+    "should handle chunked post requests and strip invalid Content-Length" => "chunked-request",
+    "should rechunk and stream Transfer-Encoding chunked responses" => "chunked-response",
+    "should timeout inactive connections after config.timeout" => "timeout",
+    "should handle pipelined requests correctly" => "pipelined",
+    "should accept requests on all set proxy domains" => "multiproxy",
+    "should be able to handle post requests" => "post"
+  }
 
   describe "EchoServer" do
     before :each do
@@ -46,7 +59,10 @@ describe ExperellaProxy do
   end
 
   describe "Proxy" do
-    before :each do
+    before :each do |test|
+      if ENV["COVERAGE"]
+        ENV["TESTNAME"] = ENV_TESTNAMES[test.example.description]
+      end
       @pid = spawn("ruby", "#{echo_server}", "127.0.0.10", "7654")
       @pid2 = spawn("#{experella_proxy}", "run", "--", "--config=#{File.join(File.dirname(__FILE__),"/../fixtures/test_config.rb")}")
       sleep(0.8) #let the server startup, specs may fail if this is set to low
@@ -335,6 +351,7 @@ describe ExperellaProxy do
             req1 = conn.get({:connect_timeout => 1, :inactivity_timeout => config.timeout + 5,
                              :keepalive => true, :head => {"Host" => "experella.com"}})
             req1.errback {
+              #this shouldnt happen, but when it does it should at least be because of a timeout
               time = Time.now - time
               time.should >= config.timeout
               time.should < config.timeout + 5

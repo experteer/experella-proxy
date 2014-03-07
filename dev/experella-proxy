@@ -7,6 +7,14 @@ Bundler.setup
 
 #NOTE: This is exactly the same as /bin/experella-proxy from here
 
+if ENV["COVERAGE"]
+  #simplecov support for integration specs
+  require 'simplecov'
+  SimpleCov.start do
+    command_name ENV["TESTNAME"] || "integration-test"
+  end
+end
+
 lib = File.expand_path(File.join(File.dirname(__FILE__), '../lib/'))
 
 require 'fileutils'

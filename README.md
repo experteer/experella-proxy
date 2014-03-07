@@ -208,6 +208,18 @@ Override server's run function
     end
 ```
 
+## Development
+
+In the dev folder a development binary is provided which allows execution without installation as gem.
+
+The test folder provides simple sinatra servers for testing/debugging which can be run with rake tasks.
+
+Additionally you can activate simplecov code coverage analysis for specs by setting COVERAGE=true
+
+```
+$> COVERAGE=true rake spec
+```
+
 ## Additional Information
 
 + [em-proxy](https://github.com/igrigorik/em-proxy)
