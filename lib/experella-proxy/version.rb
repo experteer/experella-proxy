@@ -29,5 +29,5 @@ module ExperellaProxy
   # * added self-signed SSL certificate for TLS/HTTPS
   # * added config template init functionality
   #
-  VERSION = "0.0.11"
+  VERSION = "0.0.12.WIP"
 end
