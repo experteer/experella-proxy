@@ -2,13 +2,12 @@ require 'spec_helper'
 
 describe ExperellaProxy::ConnectionManager do
 
-  let(:manager) {
+  let(:manager) do
     ExperellaProxy::ConnectionManager.new
-  }
+  end
 
   class Testconnection
-
-    def initialize()
+    def initialize
       @request = ExperellaProxy::Request.new(self)
     end
 
@@ -41,8 +40,8 @@ describe ExperellaProxy::ConnectionManager do
       manager.add_backend(ExperellaProxy::BackendServer.new("host", "port"))
       manager.backend_count.should == 1
       manager.backend_queue_count.should == 1
-      manager.backend_available?(Testconnection.new().get_request)
-      manager.backend_available?(Testconnection.new().get_request)
+      manager.backend_available?(Testconnection.new.get_request)
+      manager.backend_available?(Testconnection.new.get_request)
       manager.backend_count.should == 1
       manager.backend_queue_count.should == 0
       manager.connection_count.should == 1
@@ -76,8 +75,8 @@ describe ExperellaProxy::ConnectionManager do
     it "should return a connection if any queued conn matches" do
       backend = ExperellaProxy::BackendServer.new("host", "port")
       manager.add_backend(backend)
-      manager.backend_available?(Testconnection.new().get_request)
-      manager.backend_available?(Testconnection.new().get_request)
+      manager.backend_available?(Testconnection.new.get_request)
+      manager.backend_available?(Testconnection.new.get_request)
       ret = manager.free_backend(backend)
       ret.should be_an_instance_of Testconnection
     end
@@ -85,11 +84,11 @@ describe ExperellaProxy::ConnectionManager do
     it "should return nil and requeue backend if no conn matches" do
       backend = ExperellaProxy::BackendServer.new("host", "port")
       manager.add_backend(backend)
-      manager.backend_available?(Testconnection.new().get_request)
+      manager.backend_available?(Testconnection.new.get_request)
       backend_queue = manager.backend_queue_count
       workload = backend.workload
       ret = manager.free_backend(backend)
-      ret.should == nil
+      ret.should be_nil
       manager.backend_queue_count.should == (backend_queue + 1)
       backend.workload.should == (workload - 1)
     end
@@ -101,8 +100,8 @@ describe ExperellaProxy::ConnectionManager do
       backend = ExperellaProxy::BackendServer.new("host", "port")
       manager.add_backend(backend)
       connections = []
-      connections[1] = Testconnection.new()
-      connections[2] = Testconnection.new()
+      connections[1] = Testconnection.new
+      connections[2] = Testconnection.new
       manager.backend_available?(connections[1].get_request)
       manager.backend_available?(connections[2].get_request)
       count_before = manager.connection_count
@@ -113,9 +112,9 @@ describe ExperellaProxy::ConnectionManager do
 
   describe "#backend_available?" do
     before(:each) do
-      manager.add_backend(ExperellaProxy::BackendServer.new("host", "port", {:concurrency => 3, :accepts => {"Host" => "test"}}))
-      manager.add_backend(ExperellaProxy::BackendServer.new("host2", "port", {:accepts => {"Host" => "bla"}}))
-      manager.add_backend(ExperellaProxy::BackendServer.new("host3", "port", {:accepts => {"Host" => "blax"}}))
+      manager.add_backend(ExperellaProxy::BackendServer.new("host", "port", :concurrency => 3, :accepts => { "Host" => "test" }))
+      manager.add_backend(ExperellaProxy::BackendServer.new("host2", "port", :accepts => { "Host" => "bla" }))
+      manager.add_backend(ExperellaProxy::BackendServer.new("host3", "port", :accepts => { "Host" => "blax" }))
     end
     it "returns first matching backend and removes it from queue" do
       conn = Testconnection.new

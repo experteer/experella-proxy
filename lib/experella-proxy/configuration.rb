@@ -1,5 +1,4 @@
 module ExperellaProxy
-
   # static getter for the config variable
   #
   # @return [Configuration] config
@@ -12,7 +11,7 @@ module ExperellaProxy
   # @param config [Configuration] a config object
   # @return [Configuration] config
   def self.config=(config)
-    @config=config
+    @config = config
   end
   # The Configuration loader
   #
@@ -38,12 +37,10 @@ module ExperellaProxy
   #  Currently 404 and 503 error codes are supported
   #
   class Configuration
-
     # Error raised if the Config couldn't be load successfully
     #
     # Currently only raised if config filepath is invalid
     class NoConfigError < StandardError
-
     end
 
     attr_reader :logger, :proxy, :timeout, :backends, :error_pages, :on_event
@@ -55,18 +52,18 @@ module ExperellaProxy
     # @param [Hash] options
     # @option options [String] :configfile the config filepath
     def initialize(options={})
-      @backends=[]
-      @proxy=[]
-      @error_pages = {404 => "", 503 => ""}
-      @on_event=lambda { |name, data|}
-      default_options={:timeout => 15.0, :logger => Logger.new($stdout)}
-      options=options.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-      options=default_options.merge(options)
-      options.each do |k,v|
-        self.instance_variable_set("@#{k}",v)
+      @backends = []
+      @proxy = []
+      @error_pages = { 404 => "", 503 => "" }
+      @on_event = lambda{ |name, data| }
+      default_options = { :timeout => 15.0, :logger => Logger.new($stdout) }
+      options = options.reduce({}){ |memo, (k, v)| memo[k.to_sym] = v; memo }
+      options = default_options.merge(options)
+      options.each do |k, v|
+        instance_variable_set("@#{k}", v)
       end
       read_config_file(@configfile) if @configfile
-      ExperellaProxy.config=self
+      ExperellaProxy.config = self
     end
 
     # Return filenames fullpath relative to configfile directory
@@ -82,16 +79,16 @@ module ExperellaProxy
     # @param configfile [String] the config filepath
     # @return [Boolean] true on success, false if file can't be found
     def read_config_file(configfile)
-      if !File.exists?(configfile)
+      unless File.exist?(configfile)
         puts "error reading #{configfile}"
         raise NoConfigError.new("unable to read config file #{configfile}")
       end
-      content=File.read(configfile)
+      content = File.read(configfile)
       instance_eval(content)
       true
     end
 
-    #DSL:
+    # DSL:
 
     # Adds a {BackendServer} specified in the config file to {#backends}
     # It allows some syntactic sugar to pass :host_port as an abbrev of host and port keys separated by ':'.
@@ -100,9 +97,9 @@ module ExperellaProxy
     # @param backend_options [Hash] backends option hash
 
     def backend(backend_options)
-      host_port=backend_options.delete(:host_port)
+      host_port = backend_options.delete(:host_port)
       if host_port
-        host,port = host_port.split(":")
+        host, port = host_port.split(":")
         backend_options[:host] = host
         backend_options[:port] = port
       end
@@ -110,13 +107,13 @@ module ExperellaProxy
     end
 
     def set_on_event(lambda)
-      @on_event=lambda
+      @on_event = lambda
     end
     # Sets the {Connection} timeout specified in the config file
     #
     # @param to [Float] timeout as float
     def set_timeout(to)
-      @timeout=to
+      @timeout = to
     end
 
     # Sets the global Logger object specified in the config file
@@ -125,7 +122,7 @@ module ExperellaProxy
     #
     # @param logger [Logger] the logger object
     def set_logger(logger)
-      @logger=logger
+      @logger = logger
     end
 
     # Adds a Proxy specified in the config file to {#proxy}
@@ -153,6 +150,5 @@ module ExperellaProxy
     def set_error_pages(key, page_path)
       @error_pages[key] = File.read(join_config_path(page_path))
     end
-
   end
 end

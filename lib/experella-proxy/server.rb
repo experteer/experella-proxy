@@ -7,7 +7,7 @@ module ExperellaProxy
     #
     # @param options [Hash] options Hash passed to the proxy
     def initialize(options)
-      @options=options
+      @options = options
     end
 
     attr_reader :options
@@ -25,7 +25,6 @@ module ExperellaProxy
     # {Connection#unbind} in on_unbind
     #
     def run
-
       Proxy.start(options = {}) do |conn|
         event(:server_new_connection, :msec => msec, :signature => signature)
 
@@ -58,10 +57,6 @@ module ExperellaProxy
 
         end
       end
-
     end
-
   end
-
 end
-

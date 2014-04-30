@@ -3,7 +3,6 @@ module ExperellaProxy
   #
   # This class will never be directly initiated by user code, but initializing gets triggered in client {Connection}
   class Backend < EventMachine::Connection
-
     include ExperellaProxy::Globals
 
     # @!visibility private
@@ -36,23 +35,22 @@ module ExperellaProxy
     # @param data [String] data to be send to the connected backend server
     def send(data)
       event(:backend_send_data, :data => data)
-      @connected.callback { send_data data }
+      @connected.callback{ send_data data }
     end
 
     # Notify upstream plexer that the backend server is done processing the request
     #
     def unbind
-       event(:backend_unbind, :name => @name)
+      event(:backend_unbind, :name => @name)
       @plexer.unbind_backend(@name)
     end
 
-    private
+  private
 
     # @private constructor, gets called by EventMachine::Connection's overwritten new method
     #
     def initialize
       @connected = EM::DefaultDeferrable.new
     end
-
   end
 end

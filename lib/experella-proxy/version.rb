@@ -1,5 +1,11 @@
 module ExperellaProxy
   # ExperellaProxy Gemversion
+  # 0.0.12.WIP
+  #  * rubocop cleanup
+  # 0.0.11
+  # * output version on start
+  # * rubocup config file
+  # * applied rubyocop config file
   # 0.0.10
   # * no logging any more just firing events
   # 0.0.9
@@ -23,5 +29,5 @@ module ExperellaProxy
   # * added self-signed SSL certificate for TLS/HTTPS
   # * added config template init functionality
   #
-  VERSION = "0.0.10"
+  VERSION = "0.0.11"
 end

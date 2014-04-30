@@ -1,10 +1,9 @@
 require 'eventmachine'
 require 'http_parser.rb'
 module EchoServer
-
   def post_init
     @parser = Http::Parser.new
-    @buffer = String.new
+    @buffer = ''
 
     @parser.on_headers_complete = proc do |h|
       if @parser.request_path == "/chunked"
@@ -30,15 +29,14 @@ module EchoServer
     end
   end
 
-  def receive_data data
+  def receive_data(data)
     @buffer << data
     @parser << data
   end
-
 end
 
 EventMachine.run do
-  trap("QUIT") { EM.stop }
+  trap("QUIT"){ EM.stop }
 
   if ARGV.count == 2
     EventMachine.start_server ARGV.first, ARGV.last.to_i, EchoServer

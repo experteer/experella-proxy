@@ -5,10 +5,10 @@ require 'rubygems'
 require 'bundler'
 Bundler.setup
 
-#NOTE: This is exactly the same as /bin/experella-proxy from here
+# NOTE: This is exactly the same as /bin/experella-proxy from here
 
 if ENV["COVERAGE"]
-  #simplecov support for integration specs
+  # simplecov support for integration specs
   require 'simplecov'
   SimpleCov.start do
     command_name ENV["TESTNAME"] || "integration-test"
@@ -31,7 +31,7 @@ if ARGV[0] == "init"
     puts "ERROR: #{File.expand_path(ARGV[1])} is not a directory"
     puts "Please provide an existing directory to initialize to as second argument"
   end
-elsif ["start", "stop", "restart", "reload", "run", "zap", "status"].include? ARGV[0]
+elsif %w(start stop restart reload run zap status).include? ARGV[0]
   require 'daemons'
   Daemons.run(File.join(lib, 'experella-proxy.rb'))
 else
@@ -67,4 +67,3 @@ else
   puts "  -h, --help    Show this message"
   puts "  --version     Show daemons version"
 end
-

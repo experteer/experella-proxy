@@ -3,7 +3,6 @@ require 'sinatra/base'
 # 40kb Testserver
 #
 class ServerTwo < Sinatra::Base
-
   get '/' do
 
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus ultrices, ipsum quis bibendum dignissim, tellus eros placerat nisi, dapibus blandit lectus dui non risus. Integer dui lectus, suscipit non nulla sit amet, iaculis rutrum nulla. Curabitur vehicula in libero facilisis porta. Proin commodo ante nec volutpat hendrerit. Sed dapibus scelerisque aliquet. In hac habitasse platea dictumst. Donec vitae tristique quam. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Phasellus tincidunt eu massa nec aliquam.
@@ -78,12 +77,11 @@ Nullam congue dolor sed ligula gravida, nec lacinia dui tempus. Duis vitae tempu
 
 Duis fringilla nulla nec euismod consectetur. Maecenas sed turpis arcu. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Sed auctor augue nec porta hendrerit. Fusce vitae cursus augue. Morbi urna sem, convallis bibendum faucibus ac, tincidunt et nibh. Cras lacinia, lorem eu vestibulum dignissim, ligula nisi consequat erat, eu placerat lacus sem at metus. Cras aliquet urna at nisi volutpat, id tincidunt lacus accumsan.
 
-Aliquam euismod bibendum mauris. Sed pellentesque, lacus ut sagittis fermentum, diam nibh bibendum metus, ut porttitor libero urna vel sapien. Nunc non urna elementum, volutpat odio vitae, accumsan turpis. Sed pharetra, est non sodales gravida, lacus lacus egestas lacus, a consequat risus libero vitae magna. Sed non molestie felis, in cursus orci. 
+Aliquam euismod bibendum mauris. Sed pellentesque, lacus ut sagittis fermentum, diam nibh bibendum metus, ut porttitor libero urna vel sapien. Nunc non urna elementum, volutpat odio vitae, accumsan turpis. Sed pharetra, est non sodales gravida, lacus lacus egestas lacus, a consequat risus libero vitae magna. Sed non molestie felis, in cursus orci.
 Sed amet." * 25
 
   end
 
 # start the server if ruby file executed directly
   run! if app_file == $0
-
 end

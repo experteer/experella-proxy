@@ -16,20 +16,19 @@ if ENV["COVERAGE"]
   end
 end
 
-
 require 'pathname'
 
-LIB_ROOT= Pathname.new(File.dirname(__FILE__) +"/../")
-RSPEC_ROOT=LIB_ROOT.join("spec")
+LIB_ROOT = Pathname.new(File.dirname(__FILE__) + "/../")
+RSPEC_ROOT = LIB_ROOT.join("spec")
 $: << LIB_ROOT.join("lib")
 require 'experella-proxy.rb'
 require 'em-http'
 require 'posix/spawn'
 
 # clear spec logfile on startup
-File.new(File.join(File.expand_path(File.dirname(__FILE__)),"/fixtures/spec.log"), "w+")
+File.new(File.join(File.expand_path(File.dirname(__FILE__)), "/fixtures/spec.log"), "w+")
 # load config once before all specs
-ExperellaProxy::Configuration.new(:configfile => File.join(File.dirname(__FILE__),"/fixtures/test_config.rb"))
+ExperellaProxy::Configuration.new(:configfile => File.join(File.dirname(__FILE__), "/fixtures/test_config.rb"))
 
 RSpec.configure do |config|
   config.treat_symbols_as_metadata_keys_with_true_values = true

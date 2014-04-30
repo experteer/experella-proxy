@@ -1,6 +1,7 @@
 require 'optparse'
 require 'eventmachine'
 require 'http_parser.rb'
+require 'experella-proxy/version'
 require 'experella-proxy/globals'
 require 'experella-proxy/http_status_codes'
 require 'experella-proxy/configuration'
@@ -35,7 +36,6 @@ require 'experella-proxy/response'
 # @see file:README.md README
 # @author Dennis-Florian Herr 2014 @Experteer GmbH
 module ExperellaProxy
-
   # Initializes ExperellaProxy's {Configuration} and {ConnectionManager}
   #
   # @param [Hash] options Hash passed to the configuration
@@ -43,11 +43,11 @@ module ExperellaProxy
   # @return [Boolean] true if successful false if NoConfigError was raised
   def self.init(options={})
     begin
-    Configuration.new(options)
-    rescue Configuration::NoConfigError => e
-      puts e.message
-      puts e.backtrace.join("\n\t")
-      return false
+      Configuration.new(options)
+      rescue Configuration::NoConfigError => e
+        puts e.message
+        puts e.backtrace.join("\n\t")
+        return false
     end
     @connection_manager = ConnectionManager.new
     true
@@ -66,19 +66,18 @@ module ExperellaProxy
   # Loses all buffered data
   def self.restart
     opts = @server.options
-    self.stop
+    stop
     Server.new(opts).run if ExperellaProxy.init(opts)
   end
 
   # Stops ExperellaProxy
   #
   def self.stop
-     Proxy.stop
+    Proxy.stop
   end
-
 end
 
-#startup
+# startup
 ARGV << '--help' if ARGV.empty?
 
 options = {}

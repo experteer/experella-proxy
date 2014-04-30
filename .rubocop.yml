@@ -1,0 +1,96 @@
+
+#AllCops:
+#  Exclude:
+#    - spec/fixtures/ruby_error.rb
+
+# changed config ---------------------------
+
+AlignHash:
+  EnforcedHashRocketStyle: table
+
+HashSyntax:
+  EnforcedStyle: hash_rockets
+
+LineLength:
+  Max: 119
+
+AccessModifierIndentation:
+  EnforcedStyle: outdent
+
+MethodDefParentheses:
+  EnforcedStyle: require_parentheses
+
+SpaceBeforeBlockBraces:
+  EnforcedStyle: no_space
+
+SpaceAroundEqualsInParameterDefault:
+  EnforcedStyle: no_space
+
+DotPosition:
+  EnforcedStyle: trailing
+
+#SpaceInsideBlockBraces:
+#  EnforcedStyle: no_space
+#  SupportedStyles:
+#    - space
+#    - no_space
+#  # Valid values are: space, no_space
+#  EnforcedStyleForEmptyBraces: no_space
+#  # Space between { and |. Overrides EnforcedStyle if there is a conflict.
+#  SpaceBeforeBlockParameters: false
+
+# http://www.ruby-doc.org/core-2.1.1/Kernel.html#method-i-fail
+SignalException:
+    EnforcedStyle: only_raise
+
+
+CollectionMethods:
+  Enabled: true
+
+MethodLength:
+  Enabled: true
+  CountComments: false # count full line comments?
+  Max: 10
+  Severity: refactor
+
+FileName:
+  Exclude:
+    - 'lib/templates/pre-commit'
+
+# Disabled cops ------------------------------
+
+DoubleNegation:
+  Enabled: false
+
+ClassLength:
+  Enabled: false
+  CountComments: false # count full line comments?
+  Max: 100
+
+# complains about use of class vars
+ClassVars:
+  Enabled: false
+
+# checks for top-level docu of classes and modules
+Documentation:
+  Enabled: false
+
+# checks to avoid \1 in regex
+PerlBackrefs:
+  Enabled: false
+
+StringLiterals:
+  Enabled: false
+  EnforcedStyle: double_quotes
+
+SpecialGlobalVars:
+  Enabled: false
+
+SignalException:
+ EnforcedStyle: only_raise
+
+MethodLength:
+ Enabled: false
+
+RegexpLiteral:
+ Enabled: false

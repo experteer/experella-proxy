@@ -28,13 +28,13 @@ Gem::Specification.new do |spec|
   # documentation tool
   spec.add_development_dependency "yard", "~> 0.8.7.3"
   spec.add_development_dependency "redcarpet", "~> 2.3.0"
-  #code coverage
+  # code coverage
   spec.add_development_dependency "simplecov", "~> 0.7.1"
 
   spec.files         = Dir["bin/*"] + Dir["dev/*"] + Dir["lib/**/*"] + Dir["config/default/**/*"]
   spec.files        += Dir["spec/**/*"] + Dir["test/sinatra/*"]
   spec.files        += [".gitignore", "Gemfile", "experella-proxy.gemspec", "README.md", "TODO.txt", "Rakefile"]
-  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.executables   = spec.files.grep(%r{^bin/}){ |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec)/})
   spec.extra_rdoc_files = ['README.md']
   spec.require_paths = ["lib"]

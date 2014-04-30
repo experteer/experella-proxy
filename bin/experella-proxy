@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 if ENV["COVERAGE"]
-  #simplecov support for integration specs
+  # simplecov support for integration specs
   require 'simplecov'
   SimpleCov.start do
     command_name ENV["TESTNAME"] || "integration-test"
@@ -17,14 +17,14 @@ ARGV << '--help' if ARGV.empty?
 if ARGV[0] == "init"
   if ARGV[1] && File.directory?(File.expand_path(ARGV[1]))
     source_dir = File.expand_path(File.join(File.dirname(__FILE__), "/../config/default/"))
-      dest_dir = File.join(File.expand_path(ARGV[1]), "proxy")
-      FileUtils.copy_entry source_dir, dest_dir
-      puts "Initialized template config to #{dest_dir}"
+    dest_dir = File.join(File.expand_path(ARGV[1]), "proxy")
+    FileUtils.copy_entry source_dir, dest_dir
+    puts "Initialized template config to #{dest_dir}"
     else
       puts "ERROR: #{File.expand_path(ARGV[1])} is not a directory"
       puts "Please provide an existing directory to initialize to as second argument"
   end
-elsif ["start", "stop", "restart", "reload", "run", "zap", "status"].include? ARGV[0]
+elsif %w(start stop restart reload run zap status).include? ARGV[0]
   require 'daemons'
   Daemons.run(File.join(lib, 'experella-proxy.rb'))
 else

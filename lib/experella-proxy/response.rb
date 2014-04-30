@@ -5,7 +5,6 @@ module ExperellaProxy
   # Every Response belongs to a request {Request}
   #
   class Response
-
     include ExperellaProxy::Globals
 
     attr_reader :header
@@ -18,12 +17,12 @@ module ExperellaProxy
       @conn = request.conn
       @header = {}
       @status_code = 500
-      @no_length = false #set true if no content-length or transfer-encoding given
-      @keep_parsing = true #used for special no length case
+      @no_length = false # set true if no content-length or transfer-encoding given
+      @keep_parsing = true # used for special no length case
       @chunked = false # if true the parsed body will be chunked
       @buffer = false # default is false, so incoming data will be streamed,
       # used for http1.0 clients and transfer-encoding chunked backend responses
-      @send_buffer = String.new
+      @send_buffer = ''
       @response_parser = Http::Parser.new
       init_http_parser
     end
@@ -36,33 +35,29 @@ module ExperellaProxy
     #
     # @param str [String] data as string
     def <<(str)
-      begin
-        if @keep_parsing
-          offset = @response_parser << str
-
-        #edge case for message without content-length and transfer encoding
-          @conn.send_data str[offset..-1] unless @keep_parsing
-        else
-          @conn.send_data str
-        end
-
-      rescue Http::Parser::Error
-        event(:response_add, :signature => @conn.signature, :error => true,
-              :description => "parser error caused by invalid response data")
-        # on error unbind response_parser object, so additional data doesn't get parsed anymore
-        #
-        # assigning a string to the parser variable, will cause incoming data to get buffered
-        # imho this is a better solution than adding a condition for this rare error case
-        @response_parser = ""
-        @conn.close
+      if @keep_parsing
+        offset = (@response_parser << str)
+       # edge case for message without content-length and transfer encoding
+        @conn.send_data str[offset..-1] unless @keep_parsing
+      else
+        @conn.send_data str
       end
+     rescue Http::Parser::Error
+      event(:response_add, :signature => @conn.signature, :error => true,
+            :description => "parser error caused by invalid response data")
+      # on error unbind response_parser object, so additional data doesn't get parsed anymore
+      #
+      # assigning a string to the parser variable, will cause incoming data to get buffered
+      # imho this is a better solution than adding a condition for this rare error case
+      @response_parser = ""
+      @conn.close
     end
 
     # Returns the data in send_buffer and empties the send_buffer
     #
     # @return [String] data to send
     def flush
-      event(:response_flush,:data => @send_buffer)
+      event(:response_flush, :data => @send_buffer)
       @send_buffer.slice!(0, @send_buffer.length)
     end
 
@@ -81,16 +76,16 @@ module ExperellaProxy
     #
     def reconstruct_header
       @send_buffer = ""
-      #start line
+      # start line
       @send_buffer << "HTTP/1.1 "
       @send_buffer << @status_code.to_s + ' '
       @send_buffer << HTTP_STATUS_CODES[@status_code] + "\r\n"
-      #header fields
+      # header fields
       @header.each do |key, value|
         @send_buffer << key.to_s + ": "
         if value.is_a?(Array)
           @send_buffer << value.shift
-          until value.empty? do
+          until value.empty?
             @send_buffer << "," + value.shift
           end
         else
@@ -99,7 +94,7 @@ module ExperellaProxy
         @send_buffer << "\r\n"
       end
       @send_buffer << "\r\n"
-      #reconstruction complete
+      # reconstruction complete
       event(:response_reconstruct_header, :data => @send_buffer)
     end
 
@@ -109,15 +104,15 @@ module ExperellaProxy
     #
     # @param hsh [Hash] hash with HTTP header Key:Value pairs
     def update_header(hsh)
-      hsh = hsh.inject({}) { |memo, (k, v)| memo[k.to_sym] = v; memo }
+      hsh = hsh.reduce({}){ |memo, (k, v)| memo[k.to_sym] = v; memo }
       @header.update(hsh)
     end
 
-    private
+  private
 
     # initializes the response http parser
     def init_http_parser
-      #called when response headers are completely parsed (first \r\n\r\n triggers this)
+      # called when response headers are completely parsed (first \r\n\r\n triggers this)
       @response_parser.on_headers_complete = proc do |h|
 
         @status_code = @response_parser.status_code
@@ -142,7 +137,7 @@ module ExperellaProxy
             @no_length = true
             @header[:Connection] = "close"
           end
-        #chunked encoded
+        # chunked encoded
         else
           # buffer response data if client uses http 1.0 until message complete
           if @request.header[:http_version][0] == 1 && @request.header[:http_version][1] == 0
@@ -167,7 +162,6 @@ module ExperellaProxy
         HOP_HEADERS.each do |s|
           h.delete(s)
         end
-
 
         via = h.delete("Via")
         if via.nil?

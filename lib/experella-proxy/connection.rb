@@ -1,7 +1,6 @@
 require 'uri'
 
 module ExperellaProxy
-
   # The proxies TCP Connection to the client
   #
   # Responsible for parsing and buffering the clients http requests,
@@ -105,11 +104,11 @@ module ExperellaProxy
     def connect_backendserver(backend)
       @backend = backend
       connection_manager.free_connection(self)
-      #mangle http headers
+      # mangle http headers
       mangle
       # reconstruct the request header
       get_request.reconstruct_header
-      #special web support for unknown hosts
+      # special web support for unknown hosts
       if @backend.name.eql?("web")
         xport = get_request.header[:Host].match(/:[0-9]+/)
         if xport.nil? || xport.to_s.empty?
@@ -197,7 +196,7 @@ module ExperellaProxy
     # @param name [String] name of the Server used for logging
     # @param opts [Hash] Hash containing connection parameters
     def server(name, opts)
-      srv = EventMachine::bind_connect(opts[:bind_host], opts[:bind_port], opts[:host], opts[:port], Backend) do |c|
+      srv = EventMachine.bind_connect(opts[:bind_host], opts[:bind_port], opts[:host], opts[:port], Backend) do |c|
         c.name = name
         c.plexer = self
       end
@@ -246,7 +245,6 @@ module ExperellaProxy
       end
     end
 
-
     # Called by EventMachine when the SSL/TLS handshake has been completed, as a result of calling start_tls to
     # initiate SSL/TLS on the connection.
     #
@@ -275,7 +273,7 @@ module ExperellaProxy
 
       @server = nil
 
-      #if backend responded or client unbound connection (timeout probably triggers this too)
+      # if backend responded or client unbound connection (timeout probably triggers this too)
       if @got_response || @unbound
         event(:connection_unbind_backend_request_done,
               :msec => msec,
@@ -286,21 +284,21 @@ module ExperellaProxy
           close
           event(:connection_unbind_backend_close, :msec => msec, :signature => @signature)
         end
-        @requests.shift #pop first element,request is done
-        @got_response = false #reset response flag
+        @requests.shift # pop first element,request is done
+        @got_response = false # reset response flag
 
-        #free backend server and connect to next conn if matching conn exists
+        # free backend server and connect to next conn if matching conn exists
         unless @backend.nil?
           connect_next
         end
 
-        #check if queued requests find a matching backend
+        # check if queued requests find a matching backend
         unless @requests.empty? || @unbound
-          #try to dispatch first request to backend
+          # try to dispatch first request to backend
           dispatch_request
         end
       else
-        #handle no backend response here
+        # handle no backend response here
         event(:connection_unbind_backend_error, :msec => msec, :error => true, :error_code => 503)
         error_page = "HTTP/1.1 503 Service unavailable\r\nContent-Length: #{config.error_pages[503].length}\r\nContent-Type: text/html;charset=utf-8\r\nConnection: close\r\n\r\n"
         unless get_request.header[:http_method].eql? "HEAD"
@@ -326,11 +324,11 @@ module ExperellaProxy
       @on_unbind.call if @on_unbind
 
       event(:connection_unbind_client, :msec => msec, :signature => @signature)
-      #lazy evaluated. if first is true, second would cause a nil-pointer!
-      unless @requests.empty? || get_request.flushed? #what does this mean?
-        #log.debug [msec, @requests.inspect]
+      # lazy evaluated. if first is true, second would cause a nil-pointer!
+      unless @requests.empty? || get_request.flushed? # what does this mean?
+        # log.debug [msec, @requests.inspect]
       end
-      #delete conn from queue if still queued
+      # delete conn from queue if still queued
       connection_manager.free_connection(self)
 
       # reconnect backend to new connection if this has not happened already
@@ -343,8 +341,7 @@ module ExperellaProxy
       end
     end
 
-
-    private
+  private
 
     # @private constructor, gets called by EventMachine::Connection's overwritten new method
     # Initializes http parser and timeout_timer
@@ -354,7 +351,7 @@ module ExperellaProxy
       @options = options
       @backend = nil
       @server = nil
-      @requests = [] #contains request objects
+      @requests = [] # contains request objects
       @unbound = false
       @got_response = false
       @request_parser = Http::Parser.new
@@ -370,7 +367,7 @@ module ExperellaProxy
     # did this for testability. 27.11.2013
     #
     def connect_next
-      #free backend server and connect to next conn if matching conn exists
+      # free backend server and connect to next conn if matching conn exists
       next_conn = connection_manager.free_backend(@backend)
       unless next_conn.nil?
         next_conn.connect_backendserver(@backend)
@@ -407,14 +404,13 @@ module ExperellaProxy
 
     # initializes http parser callbacks and blocks
     def init_http_parser
-
       @request_parser.on_message_begin = proc do
         @requests.push(Request.new(self))
         # this log also triggers if client sends new keep-alive request before backend was unbound
-        event(:connection_http_parser_start, :msec => msec, :pipelined => (@requests.length>1))
+        event(:connection_http_parser_start, :msec => msec, :pipelined => (@requests.length > 1))
       end
 
-      #called when request headers are completely parsed (first \r\n\r\n triggers this)
+      # called when request headers are completely parsed (first \r\n\r\n triggers this)
       @request_parser.on_headers_complete = proc do |h|
         event(:connection_http_parser_headers_complete_start, :msec => msec, :signature => @signature, :request_path => @request_parser.request_url, :host => h["Host"])
         request = @requests.last
@@ -425,13 +421,13 @@ module ExperellaProxy
         else
           request.keep_alive = false if h["Connection"].to_s.downcase.include? "close"
         end
-        request.update_header({:Connection => "close"}) #update Connection header to close for backends
+        request.update_header(:Connection => "close") # update Connection header to close for backends
 
         # if there is a transfer-encoding, stream the message as Transfer-Encoding: chunked to backends
         unless h["Transfer-Encoding"].nil?
           h.delete("Content-Length")
           request.chunked = true
-          request.update_header({:"Transfer-Encoding" => "chunked"})
+          request.update_header(:"Transfer-Encoding" => "chunked")
         end
 
         # remove all hop-by-hop header fields
@@ -448,19 +444,18 @@ module ExperellaProxy
           h.delete(s)
         end
 
-
         via = h.delete("Via")
         if via.nil?
           via = "1.1 experella"
         else
           via << "1.1 experella"
         end
-        request.update_header({:Via => via})
+        request.update_header(:Via => via)
 
         request.update_header(h)
-        request.update_header({:http_version => @request_parser.http_version})
-        request.update_header({:http_method => @request_parser.http_method}) # for requests
-        request.update_header({:request_url => @request_parser.request_url})
+        request.update_header(:http_version => @request_parser.http_version)
+        request.update_header(:http_method => @request_parser.http_method) # for requests
+        request.update_header(:request_url => @request_parser.request_url)
         if @request_parser.request_url.include? "http://"
           u = URI.parse(@request_parser.request_url)
           request.update_header(:Host => u.host)
@@ -470,7 +465,6 @@ module ExperellaProxy
         end
 
         request.add_uri(:port => u.port, :path => u.path, :query => u.query)
-
 
         # try to connect request to backend
         # but only try to connect if this (.last) equals (.first), true at length == 1
@@ -502,7 +496,6 @@ module ExperellaProxy
           request << "0\r\n\r\n"
         end
       end
-
     end
 
     # Mangles http headers based on backend specific mangle configuration
@@ -511,9 +504,9 @@ module ExperellaProxy
       unless @backend.mangle.nil?
         @backend.mangle.each do |k, v|
           if v.respond_to?(:call)
-            get_request.update_header({k => v.call(get_request.header[k])})
+            get_request.update_header(k => v.call(get_request.header[k]))
           else
-            get_request.update_header({k => v})
+            get_request.update_header(k => v)
           end
         end
       end
@@ -527,7 +520,7 @@ module ExperellaProxy
     # If the backend server is not yet connected, data is already buffered to be sent when the connection gets established
     #
     def relay_to_server
-      if @backend && !@requests.empty? && !get_request.flushed? && !@server.nil?
+      if @backend && !@requests.empty? && !get_request.flushed? && @server
         # save some memory here if logger isn't set on debug
         data = get_request.flush
         @server.send_data data
@@ -539,7 +532,7 @@ module ExperellaProxy
       end
     end
 
-    #returns milliseconds since connection startup as string
+    # returns milliseconds since connection startup as string
     def msec
       (((Time.now.tv_sec - @start.tv_sec) * 1000) + ((Time.now.tv_usec - @start.tv_usec) / 1000.0)).to_s + "ms: "
     end
@@ -556,6 +549,5 @@ module ExperellaProxy
         end
       end
     end
-
   end
 end

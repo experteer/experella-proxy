@@ -1,12 +1,10 @@
 module ExperellaProxy
-
   # BackendServer objects contain information on available BackendServers
   #
   # Accepts Requests based on Request header information and it's message_matcher
   #
   # See {#initialize}
   class BackendServer
-
     attr_accessor :host, :port, :concurrency, :workload, :name
     attr_reader :message_matcher, :mangle
 
@@ -42,9 +40,9 @@ module ExperellaProxy
     # @option options [Hash|Proc] :accepts  message_pattern that will be converted to a message_matcher or an arbitrary message_matcher as proc
     #   Empty Hash is default
     # @option options [Hash] :mangle Hash which can modify request headers. Keys get symbolized. nil is default
-    def initialize(host, port, options = {})
-      @host = host #host URL as string
-      @port = port #port as string
+    def initialize(host, port, options={})
+      @host = host # host URL as string
+      @port = port # port as string
       @name = options[:name] || "#{host}:#{port}"
       if options[:concurrency].nil?
         @concurrency = 1
@@ -55,10 +53,10 @@ module ExperellaProxy
 
       make_message_matcher(options[:accepts])
 
-      #mangle can be nil
+      # mangle can be nil
       @mangle = options[:mangle]
-                   #convert keys to symbols to match request header keys
-      @mangle = @mangle.inject({}) { |memo, (k, v)| memo[k.to_sym] = v; memo } unless @mangle.nil?
+                   # convert keys to symbols to match request header keys
+      @mangle = @mangle.reduce({}){ |memo, (k, v)| memo[k.to_sym] = v; memo } unless @mangle.nil?
     end
 
     # compares Backend servers message_matcher to request object
@@ -66,8 +64,8 @@ module ExperellaProxy
     # @param request [Request] a request object
     # @return [Boolean] true if BackendServer accepts the Request, false otherwise
     def accept?(request)
-      res=@message_matcher.call(request)
-      #puts "#{name} #{request.header['request_url']} #{res}"
+      res = @message_matcher.call(request)
+      # puts "#{name} #{request.header['request_url']} #{res}"
       res
     end
 
@@ -75,24 +73,24 @@ module ExperellaProxy
     #
     # @param obj [Hash|Proc] hash containing a message_pattern that will be converted to a message_matcher proc or an arbitrary own message_matcher
     def make_message_matcher(obj)
-      @message_matcher =if obj.respond_to?(:call)
-        obj
+      @message_matcher = if obj.respond_to?(:call)
+                           obj
       else
-        #precompile message pattern keys to symbols and values to regexp objects
-        keys = (obj||{}).inject({}) { |memo, (k, v)| memo[k.to_sym] = Regexp.new(v); memo }
-        lambda do |request| #TODO: ugly!
-          ret=true
+        # precompile message pattern keys to symbols and values to regexp objects
+        keys = (obj || {}).reduce({}){ |memo, (k, v)| memo[k.to_sym] = Regexp.new(v); memo }
+        lambda do |request| # TODO: ugly!
+          ret = true
           keys.each do |key, pattern|
-            #use uri for :port :path and :query keys
+            # use uri for :port :path and :query keys
             if key == :port || key == :path || key == :query
-              ret=false unless request.uri[key] && request.uri[key].match(pattern)
-            else #use headers
-              ret=false unless request.header[key] && request.header[key].match(pattern)
+              ret = false unless request.uri[key] && request.uri[key].match(pattern)
+            else # use headers
+              ret = false unless request.header[key] && request.header[key].match(pattern)
             end
-            break unless ret #stop as soon as possible
+            break unless ret # stop as soon as possible
           end
           ret
-        end #lambda
+        end # lambda
       end
     end
   end

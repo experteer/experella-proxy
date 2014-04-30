@@ -22,23 +22,23 @@ describe ExperellaProxy do
 
   # static testnames send to spawned experella for simplecov
   ENV_TESTNAMES = {
-    "should get response from the echoserver via the proxy" => "response",
-    "should respond with 404" => "404",
-    "should respond with 400 on malformed request" => "400",
-    "should respond with 503" => "503",
-    "should reuse keep-alive connections" => "keep-alive",
+    "should get response from the echoserver via the proxy"                => "response",
+    "should respond with 404"                                              => "404",
+    "should respond with 400 on malformed request"                         => "400",
+    "should respond with 503"                                              => "503",
+    "should reuse keep-alive connections"                                  => "keep-alive",
     "should handle chunked post requests and strip invalid Content-Length" => "chunked-request",
-    "should rechunk and stream Transfer-Encoding chunked responses" => "chunked-response",
-    "should timeout inactive connections after config.timeout" => "timeout",
-    "should handle pipelined requests correctly" => "pipelined",
-    "should accept requests on all set proxy domains" => "multiproxy",
-    "should be able to handle post requests" => "post"
+    "should rechunk and stream Transfer-Encoding chunked responses"        => "chunked-response",
+    "should timeout inactive connections after config.timeout"             => "timeout",
+    "should handle pipelined requests correctly"                           => "pipelined",
+    "should accept requests on all set proxy domains"                      => "multiproxy",
+    "should be able to handle post requests"                               => "post"
   }
 
   describe "EchoServer" do
     before :each do
       @pid = spawn("ruby", "#{echo_server}", "127.0.0.10", "7654")
-      sleep(0.8) #let the server startup, specs may fail if this is set to low
+      sleep(0.8) # let the server startup, specs may fail if this is set to low
     end
     after :each do
       Process.kill('QUIT', @pid)
@@ -46,9 +46,9 @@ describe ExperellaProxy do
     end
 
     it "should get response from the echoserver" do
-      lambda {
+      lambda do
         EM.run do
-          http = EventMachine::HttpRequest.new("http://127.0.0.10:7654").get({:connect_timeout => 1})
+          http = EventMachine::HttpRequest.new("http://127.0.0.10:7654").get(:connect_timeout => 1)
           http.errback {
             EventMachine.stop
             raise "http request failed"
@@ -58,7 +58,7 @@ describe ExperellaProxy do
             EventMachine.stop
           }
         end
-      }.should_not raise_error
+      end.should_not raise_error
     end
   end
 
@@ -68,9 +68,9 @@ describe ExperellaProxy do
         ENV["TESTNAME"] = ENV_TESTNAMES[test.example.description]
       end
       @pid = spawn("ruby", "#{echo_server}", "127.0.0.10", "7654")
-      @pid2 = spawn("#{experella_proxy}", "run", "--", "--config=#{File.join(File.dirname(__FILE__),"/../fixtures/test_config.rb")}")
-      sleep(0.8) #let the server startup, specs may fail if this is set to low
-      ExperellaProxy.init(:configfile => File.join(File.dirname(__FILE__),"/../fixtures/test_config.rb"))
+      @pid2 = spawn("#{experella_proxy}", "run", "--", "--config=#{File.join(File.dirname(__FILE__), "/../fixtures/test_config.rb")}")
+      sleep(0.8) # let the server startup, specs may fail if this is set to low
+      ExperellaProxy.init(:configfile => File.join(File.dirname(__FILE__), "/../fixtures/test_config.rb"))
       config.backends.each do |backend|
         connection_manager.add_backend(ExperellaProxy::BackendServer.new(backend[:host], backend[:port], backend))
       end
@@ -86,10 +86,10 @@ describe ExperellaProxy do
       log.info "should get response from the echoserver via the proxy"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             http = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}"
-            ).get({:connect_timeout => 1, :head => {"Host" => "experella.com"}})
+            ).get(:connect_timeout => 1, :head => { "Host" => "experella.com" })
             http.errback {
               EventMachine.stop
               raise "http request failed"
@@ -99,7 +99,7 @@ describe ExperellaProxy do
               EventMachine.stop
             }
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 
@@ -107,18 +107,18 @@ describe ExperellaProxy do
       log.info "should respond with 404"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
 
             multi = EventMachine::MultiRequest.new
             multi_shuffle = []
-            multi_shuffle[0] = Proc.new {
+            multi_shuffle[0] = proc {
               multi.add :head, EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}"
-              ).head({:connect_timeout => 1})
+              ).head(:connect_timeout => 1)
             }
-            multi_shuffle[1] = Proc.new {
+            multi_shuffle[1] = proc {
               multi.add :get, EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}"
-              ).get({:connect_timeout => 1})
+              ).get(:connect_timeout => 1)
             }
             multi_shuffle.shuffle!
             multi_shuffle.each do |p|
@@ -137,9 +137,8 @@ describe ExperellaProxy do
               EventMachine.stop
             end
 
-
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 
@@ -147,11 +146,11 @@ describe ExperellaProxy do
       log.info "should respond with 400 on malformed request"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             http = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}"
-            ).post({:connect_timeout => 1, :head => {"Host" => "experella.com", "Transfer-Encoding" => "chunked"},
-                   :body => "9\r\nMalformed\r\na\r\nchunked da\r\n2\rta HERE\r\n0\r\n\r\n"})
+            ).post(:connect_timeout => 1, :head => { "Host" => "experella.com", "Transfer-Encoding" => "chunked" },
+                   :body => "9\r\nMalformed\r\na\r\nchunked da\r\n2\rta HERE\r\n0\r\n\r\n")
             http.errback {
               EventMachine.stop
               raise "http request failed"
@@ -161,7 +160,7 @@ describe ExperellaProxy do
               EventMachine.stop
             }
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 
@@ -169,18 +168,18 @@ describe ExperellaProxy do
       log.info "should respond with 503"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
 
             multi = EventMachine::MultiRequest.new
             multi_shuffle = []
-            multi_shuffle[0] = Proc.new {
+            multi_shuffle[0] = proc {
               multi.add :head, EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}/oneroute"
-              ).head({:connect_timeout => 1, :head => {"Host" => "experella.com"}})
+              ).head(:connect_timeout => 1, :head => { "Host" => "experella.com" })
             }
-            multi_shuffle[1] = Proc.new {
+            multi_shuffle[1] = proc {
               multi.add :get, EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}/anotherpath"
-              ).get({:connect_timeout => 1, :head => {"Host" => "experella.com"}})
+              ).get(:connect_timeout => 1, :head => { "Host" => "experella.com" })
             }
             multi_shuffle.shuffle!
             multi_shuffle.each do |p|
@@ -199,9 +198,8 @@ describe ExperellaProxy do
               EventMachine.stop
             end
 
-
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 
@@ -209,10 +207,10 @@ describe ExperellaProxy do
       log.info "should reuse keep-alive connections"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             conn = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}")
-            req1 = conn.get({:connect_timeout => 1, :keepalive => true, :head => {"Host" => "experella.com"}})
+            req1 = conn.get(:connect_timeout => 1, :keepalive => true, :head => { "Host" => "experella.com" })
 
             req1.errback {
               EventMachine.stop
@@ -220,14 +218,14 @@ describe ExperellaProxy do
             }
             req1.callback {
               req1.response.should start_with "you sent: "
-              req2 = conn.get({:path => '/about/', :connect_timeout => 1, :keepalive => true, :head => {"Host" => "experella.com"}})
+              req2 = conn.get(:path => '/about/', :connect_timeout => 1, :keepalive => true, :head => { "Host" => "experella.com" })
               req2.errback {
                 EventMachine.stop
                 raise "http request 2 failed"
               }
               req2.callback {
                 req2.response.should start_with "you sent: "
-                req3 = conn.get({:connect_timeout => 1, :head => {"Host" => "experella.com"}})
+                req3 = conn.get(:connect_timeout => 1, :head => { "Host" => "experella.com" })
                 req3.errback {
                   EventMachine.stop
                   raise "http request 3 failed"
@@ -239,7 +237,7 @@ describe ExperellaProxy do
               }
             }
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 
@@ -247,7 +245,7 @@ describe ExperellaProxy do
       log.info "should stream chunked post requests"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             # this will issue a Post Request with Content-Length AND Transfer-Encoding chunked, where the data is
             # correctly encoded in chunks. The Proxy should therefor strip the Content-Length and forward the data
@@ -265,10 +263,10 @@ describe ExperellaProxy do
             expected_body = String.new
             chunks = 20 + rand(20)
             # all alphanumeric characters
-            o = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map { |i| i.to_a }.flatten
-            while chunks > 0 do
-              #chunksize 10 to 1510 characters
-              string = (0...(10 + rand(1500))).map { o[rand(o.length)] }.join
+            o = [('a'..'z'), ('A'..'Z'), ('0'..'9')].map{ |i| i.to_a }.flatten
+            while chunks > 0
+              # chunksize 10 to 1510 characters
+              string = (0...(10 + rand(1500))).map{ o[rand(o.length)] }.join
               body << string.size.to_s(16)
               body << "\r\n"
               body << string
@@ -279,8 +277,8 @@ describe ExperellaProxy do
             body << "0\r\n\r\n"
 
             http = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}"
-            ).post({:connect_timeout => 1, :head => {"Host" => "experella.com", "Transfer-Encoding" => "chunked"},
-                   :body => body})
+            ).post(:connect_timeout => 1, :head => { "Host" => "experella.com", "Transfer-Encoding" => "chunked" },
+                   :body => body)
             http.errback {
               EventMachine.stop
               raise "http request failed"
@@ -309,7 +307,7 @@ describe ExperellaProxy do
               EventMachine.stop
             }
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
 
     end
@@ -319,17 +317,17 @@ describe ExperellaProxy do
       log.info "should rechunk and stream Transfer-Encoding chunked responses"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             http = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}/chunked"
-            ).get({:connect_timeout => 1, :head => {"Host" => "experella.com"}})
+            ).get(:connect_timeout => 1, :head => { "Host" => "experella.com" })
             http.errback {
               EventMachine.stop
               raise "http request failed"
             }
             received_chunks = ""
             http.stream { |chunk|
-             received_chunks << chunk
+              received_chunks << chunk
             }
             http.callback {
               true.should be_true
@@ -338,7 +336,7 @@ describe ExperellaProxy do
               EventMachine.stop
             }
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
 
     end
@@ -348,14 +346,14 @@ describe ExperellaProxy do
       EM.epoll
       EM.run do
 
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             time = Time.now
             conn = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}")
-            req1 = conn.get({:connect_timeout => 1, :inactivity_timeout => config.timeout + 5,
-                             :keepalive => true, :head => {"Host" => "experella.com"}})
+            req1 = conn.get(:connect_timeout => 1, :inactivity_timeout => config.timeout + 5,
+                             :keepalive => true, :head => { "Host" => "experella.com" })
             req1.errback {
-              #this shouldnt happen, but when it does it should at least be because of a timeout
+              # this shouldnt happen, but when it does it should at least be because of a timeout
               time = Time.now - time
               time.should >= config.timeout
               time.should < config.timeout + 5
@@ -365,7 +363,7 @@ describe ExperellaProxy do
             req1.callback {
               req1.response.should start_with "you sent: "
             }
-            #check for inactivity timeout
+            # check for inactivity timeout
             EventMachine.add_periodic_timer(1) do
               if conn.conn.get_idle_time.nil?
                 time = Time.now - time
@@ -378,22 +376,21 @@ describe ExperellaProxy do
               end
             end
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
-
 
     it "should handle pipelined requests correctly" do
       log.info "should handle pipelined requests correctly"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             conn = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}")
 
-            pipe1 = conn.get({:connect_timeout => 1, :keepalive => true, :head => {"Host" => "experella.com"}})
-            pipe2 = conn.get({:path => '/about/', :connect_timeout => 1, :keepalive => true, :head => {"Host" => "experella.com"}})
-            pipe3 = conn.get({:connect_timeout => 1, :head => {"Host" => "experella.com"}})
+            pipe1 = conn.get(:connect_timeout => 1, :keepalive => true, :head => { "Host" => "experella.com" })
+            pipe2 = conn.get(:path => '/about/', :connect_timeout => 1, :keepalive => true, :head => { "Host" => "experella.com" })
+            pipe3 = conn.get(:connect_timeout => 1, :head => { "Host" => "experella.com" })
             pipe1.errback {
               EventMachine.stop
               raise "http request 1 failed"
@@ -423,7 +420,7 @@ describe ExperellaProxy do
               EventMachine.stop
             }
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 
@@ -431,16 +428,16 @@ describe ExperellaProxy do
       log.info "should accept requests on all set proxy domains"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
 
             multi = EventMachine::MultiRequest.new
             multi_shuffle = []
             i = 0
-            while config.proxy.length > i do
-              multi_shuffle[i] = Proc.new { |i|
+            while config.proxy.length > i
+              multi_shuffle[i] = proc { |i|
                 multi.add i, EventMachine::HttpRequest.new("http://#{config.proxy[i][:host]}:#{config.proxy[i][:port]}"
-                ).get({:connect_timeout => 1, :head => {"Host" => "experella.com"}})
+                ).get(:connect_timeout => 1, :head => { "Host" => "experella.com" })
               }
               i += 1
             end
@@ -462,7 +459,7 @@ describe ExperellaProxy do
               EventMachine.stop
             end
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 
@@ -470,10 +467,10 @@ describe ExperellaProxy do
       log.info "should be able to handle post requests"
       EM.epoll
       EM.run do
-        lambda {
+        lambda do
           EventMachine.add_timer(0.2) do
             http = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}"
-            ).post({:connect_timeout => 1, :head => {"Host" => "experella.com"}, :body => "Message body"})
+            ).post(:connect_timeout => 1, :head => { "Host" => "experella.com" }, :body => "Message body")
             http.errback {
               EventMachine.stop
               raise "http post failed"
@@ -484,7 +481,7 @@ describe ExperellaProxy do
               EventMachine.stop
             }
           end
-        }.should_not raise_error
+        end.should_not raise_error
       end
     end
 

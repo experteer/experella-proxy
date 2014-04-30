@@ -2,20 +2,20 @@ require 'logger'
 
 request_part = "oneroute|anotherpath"
 
-backend( :name => "experella1", :host => "127.0.0.10", :port => "7654", :concurrency => "1",
-  :accepts => {"Host" => "experella", "request_url" => "^((?!/(#{request_part})($|/)).)*$"}
+backend(:name => "experella1", :host => "127.0.0.10", :port => "7654", :concurrency => "1",
+  :accepts => { "Host" => "experella", "request_url" => "^((?!/(#{request_part})($|/)).)*$" }
 )
 
-backend( :name => "experella2", :host => "127.0.0.10", :port => "7654", :concurrency => "2",
-         :accepts => {"Host" => "experella", "request_url" => "^((?!/(#{request_part})($|/)).)*$"}
+backend(:name => "experella2", :host => "127.0.0.10", :port => "7654", :concurrency => "2",
+         :accepts => { "Host" => "experella", "request_url" => "^((?!/(#{request_part})($|/)).)*$" }
 )
 
-backend( :name => "exp proxy", :host => "127.0.0.11", :port => "7655", :concurrency => "1",
-  :accepts => {"Host" => "experella", "request_url" => "/(#{request_part})($|/)"}
+backend(:name => "exp proxy", :host => "127.0.0.11", :port => "7655", :concurrency => "1",
+  :accepts => { "Host" => "experella", "request_url" => "/(#{request_part})($|/)" }
 )
 
-backend( :name => "web", :host_port => "0.0.0.0:80", :concurrency => "1000",
-  :accepts => {"Host" => "^((?!(experella|127)).)*$"}
+backend(:name => "web", :host_port => "0.0.0.0:80", :concurrency => "1000",
+  :accepts => { "Host" => "^((?!(experella|127)).)*$" }
 )
 
 # don't forget EM-HTTP-Request (used in experella-proxy specs) default timeout is 10.0
@@ -30,5 +30,3 @@ logger.level = Logger::INFO
 
 set_error_pages(404, "404.html")
 set_error_pages(503, "503.html")
-
-

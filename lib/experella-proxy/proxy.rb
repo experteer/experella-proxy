@@ -11,8 +11,7 @@ module ExperellaProxy
     # @param options [Hash] option Hash passed to the {Connection}
     # @param blk [Block] Block evaluated in each new {Connection}
     def self.start(options, &blk)
-
-      #initalize backend servers from config
+      # initalize backend servers from config
       config.backends.each do |backend|
         connection_manager.add_backend(BackendServer.new(backend[:host], backend[:port], backend))
         logger.info "Initializing backend #{backend[:name]} at #{backend[:host]}:#{backend[:port]} with concurrency\
@@ -21,11 +20,11 @@ module ExperellaProxy
         logger.info "Backend mangles: #{backend[:mangle].inspect}"
       end
 
-      #start eventmachine
+      # start eventmachine
       EM.epoll
       EM.run do
-        trap("TERM") { stop }
-        trap("INT") { stop }
+        trap("TERM"){ stop }
+        trap("INT"){ stop }
 
         if config.proxy.empty?
           logger.fatal "No proxy host:port address configured. Stopping experella-proxy."
@@ -37,10 +36,10 @@ module ExperellaProxy
             unless proxy[:options].nil?
               opts = options.merge(proxy[:options])
             end
-            logger.info "Launching experella-proxy at #{proxy[:host]}:#{proxy[:port]} with #{config.timeout}s timeout..."
+            logger.info "Launching experella-proxy (#{ExperellaProxy::VERSION}) at #{proxy[:host]}:#{proxy[:port]} with #{config.timeout}s timeout..."
             logger.info "with options: #{opts.inspect}"
-            EventMachine::start_server(proxy[:host], proxy[:port],
-                                       Connection, opts) do |conn|
+            EventMachine.start_server(proxy[:host], proxy[:port],
+                                      Connection, opts) do |conn|
               conn.instance_eval(&blk)
             end
           end
@@ -53,7 +52,7 @@ module ExperellaProxy
     #
     def self.stop
       if EM.reactor_running?
-        EventMachine::stop_event_loop
+        EventMachine.stop_event_loop
       end
     end
   end

@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe ExperellaProxy::Configuration do
-  let(:config) {
+  let(:config) do
     ExperellaProxy.config
-  }
+  end
 
   it "should load a config file" do
     config.backends.size.should == 4
@@ -17,7 +17,7 @@ describe ExperellaProxy::Configuration do
   end
 
   it "should raise NoConfigError if config filepath doesn't exist" do
-    lambda { config.read_config_file("/a/non/existing/filepath")
-    }.should raise_error(ExperellaProxy::Configuration::NoConfigError)
+    lambda do config.read_config_file("/a/non/existing/filepath")
+    end.should raise_error(ExperellaProxy::Configuration::NoConfigError)
   end
 end

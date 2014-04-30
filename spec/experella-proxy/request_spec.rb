@@ -2,9 +2,9 @@ require 'spec_helper'
 
 describe ExperellaProxy::Request do
 
-  let(:request) {
+  let(:request) do
     ExperellaProxy::Request.new("conn")
-  }
+  end
 
   describe "#new" do
 
@@ -51,7 +51,7 @@ describe ExperellaProxy::Request do
 
   describe "#add_uri" do
     it "adds a hash to the URI hash" do
-      request.add_uri({:path => "/hello"})
+      request.add_uri(:path => "/hello")
       request.uri[:path].should eql("/hello")
     end
   end
@@ -67,15 +67,15 @@ describe ExperellaProxy::Request do
     it "overwrites values of existing keys" do
       request.update_header("Host" => "xyz", :request_url => "abcd")
       request.update_header("Host" => "abc")
-      request.header.should eql({:Host => "abc", :request_url => "abcd"})
+      request.header.should eql(:Host => "abc", :request_url => "abcd")
     end
   end
 
   describe "#reconstruct_header" do
     it "writes a valid http header into send_buffer" do
       request << "HeaderDummy\r\n\r\n"
-      request.update_header({:http_method => "GET", :request_url => "/index",
-                            "Host" => "localhost", "Connection" => "keep-alive", :"Via-X" => ["Lukas", "Amy", "George"]})
+      request.update_header(:http_method => "GET", :request_url => "/index",
+                            "Host" => "localhost", "Connection" => "keep-alive", :"Via-X" => %w(Lukas Amy George))
       request.reconstruct_header
       data = request.flush
       data.start_with?("GET /index HTTP/1.1\r\n").should be_true

@@ -1,5 +1,4 @@
 module ExperellaProxy
-
   # static getter for the connection_manager variable
   #
   # @return [ConnectionManager] connection_manager
@@ -9,13 +8,12 @@ module ExperellaProxy
 
   # The ConnectionManager is responsible for queueing and matching frontend {Connection} and {BackendServer} objects
   class ConnectionManager
-
     # The constructor
     #
     def initialize
-      @connection_queue = [] #array queue of client connection objects
-      @backend_queue = [] #array queue of available backend servers
-      @backend_list = {} #list of all backend servers
+      @connection_queue = [] # array queue of client connection objects
+      @backend_queue = [] # array queue of available backend servers
+      @backend_list = {} # list of all backend servers
     end
 
     # Matches {Request} to queued {BackendServer}
@@ -34,16 +32,16 @@ module ExperellaProxy
     def backend_available?(request)
       @backend_queue.each do |backend|
         if backend.accept?(request)
-          #connect backend to requests connection if request matches
+          # connect backend to requests connection if request matches
           backend.workload += 1
           ret = @backend_queue.delete(backend)
-          #requeue backend if concurrency isnt maxed
+          # requeue backend if concurrency isnt maxed
           @backend_queue.push(backend) if backend.workload < backend.concurrency
           return ret
         end
       end
       if match_any_backend?(request)
-        #push requests connection on queue if no backend was connected
+        # push requests connection on queue if no backend was connected
         @connection_queue.push(request.conn)
         :queued
       else
@@ -58,14 +56,14 @@ module ExperellaProxy
     # @param backend [BackendServer] BackendServer which got free
     # @return [NilClass]
     def free_backend(backend)
-      #check if any queued connections match new available backend
+      # check if any queued connections match new available backend
       conn = match_connections(backend)
       if conn
-        #return matching connection
-        #you should try to connect the new backend to this connection
+        # return matching connection
+        # you should try to connect the new backend to this connection
         return conn
       else
-        #push free backend on queue if it wasn't used for a queued conn or is already queued (concurrency)
+        # push free backend on queue if it wasn't used for a queued conn or is already queued (concurrency)
         @backend_queue.push(backend) if @backend_list.include?(backend.name) && !@backend_queue.include?(backend)
         backend.workload -= 1
       end
@@ -78,17 +76,16 @@ module ExperellaProxy
     # @return [Connection] a queued connection that would match the BackendServer
     # @return [Boolean] true if backend was added to list
     def add_backend(backend)
-
       @backend_list[backend.name] = backend
 
-      #check if any queued connections match new available backend
+      # check if any queued connections match new available backend
       conn = match_connections(backend)
       if conn
-        #return matching connection
-        #you should try to connect the new backend to this connection
+        # return matching connection
+        # you should try to connect the new backend to this connection
         return conn
       else
-        #queue new backend
+        # queue new backend
         @backend_queue.push(backend)
       end
       true
@@ -99,7 +96,6 @@ module ExperellaProxy
     # @param backend [BackendServer] the BackendServer to be removed
     # @return [Boolean] true if a backend was removed, else returns false
     def remove_backend(backend)
-
       ret = @backend_list.delete(backend.name)
       @backend_queue.delete(backend)
 
@@ -138,7 +134,7 @@ module ExperellaProxy
       @connection_queue.size
     end
 
-    private
+  private
 
     # Matches request to all known backends
     #
@@ -162,6 +158,5 @@ module ExperellaProxy
       end
       nil
     end
-
   end
 end

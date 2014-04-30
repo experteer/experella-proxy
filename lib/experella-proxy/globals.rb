@@ -1,14 +1,12 @@
 module ExperellaProxy
-
   # defined hop by hop header fields
-  HOP_HEADERS = ["Connection", "Keep-Alive", "Proxy-Authorization", "TE", "Trailer", "Transfer-Encoding", "Upgrade"]
+  HOP_HEADERS = %w(Connection Keep-Alive Proxy-Authorization TE Trailer Transfer-Encoding Upgrade)
 
   # Provides getters for global variables
   #
   # All methods are private. The module needs to be included in every Class which needs it.
   module Globals
-
-    private
+  private
 
     # @!visibility public
 
@@ -25,8 +23,8 @@ module ExperellaProxy
     # @param [Hash] details contains details of the event
     # see ExperellaProxy::Configuration#on_event
 
-    def event(name,details={})
-      config.on_event.call(name,details)
+    def event(name, details={})
+      config.on_event.call(name, details)
     end
 
     # Get the global connection manager

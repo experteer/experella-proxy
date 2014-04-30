@@ -2,9 +2,9 @@ require 'spec_helper'
 
 describe ExperellaProxy::Response do
 
-  let(:response) {
+  let(:response) do
     ExperellaProxy::Response.new(ExperellaProxy::Request.new("conn"))
-  }
+  end
 
   describe "#new" do
 
@@ -24,14 +24,14 @@ describe ExperellaProxy::Response do
     it "overwrites values of existing keys" do
       response.update_header("Host" => "xyz", :response_url => "abcd")
       response.update_header("Host" => "abc")
-      response.header.should eql({:Host => "abc", :response_url => "abcd"})
+      response.header.should eql(:Host => "abc", :response_url => "abcd")
     end
   end
 
   describe "#reconstruct_header" do
     it "writes a valid http header into send_buffer" do
-      response.update_header({"Connection" => "keep-alive",
-                              :"Via-X" => ["Lukas", "Amy", "George"]})
+      response.update_header("Connection" => "keep-alive",
+                             :"Via-X"     => %w(Lukas Amy George))
       response.reconstruct_header
       data = response.flush
       data.start_with?("HTTP/1.1 500 Internal Server Error\r\n").should be_true
