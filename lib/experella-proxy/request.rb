@@ -40,7 +40,7 @@ module ExperellaProxy
     # @param hsh [Hash] hash with keys :port :path :query containing URI information
     def add_uri(hsh)
       @uri.update(hsh)
-      log.debug hsh
+      event(:request_add_uri, :uri => hsh)
     end
 
     # Returns the data in send_buffer and empties the send_buffer
@@ -90,7 +90,7 @@ module ExperellaProxy
       @send_buffer << "\r\n"
       #reconstruction complete
       @send_buffer << buf[1] unless buf.nil? #append buffered body
-      log.debug [:reconstructed_sendbuffer, @send_buffer]
+      event(:request_reconstruct_header, :data => @send_buffer)
     end
 
     # Adds a hash to {#header}

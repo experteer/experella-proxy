@@ -47,7 +47,8 @@ module ExperellaProxy
         end
 
       rescue Http::Parser::Error
-        log.warn ["Parser error caused by invalid response data", "@#{@conn.signature}"]
+        event(:response_add, :signature => @conn.signature, :error => true,
+              :description => "parser error caused by invalid response data")
         # on error unbind response_parser object, so additional data doesn't get parsed anymore
         #
         # assigning a string to the parser variable, will cause incoming data to get buffered
@@ -61,7 +62,7 @@ module ExperellaProxy
     #
     # @return [String] data to send
     def flush
-      log.debug [:data_to_user, @send_buffer]
+      event(:response_flush,:data => @send_buffer)
       @send_buffer.slice!(0, @send_buffer.length)
     end
 
@@ -99,7 +100,7 @@ module ExperellaProxy
       end
       @send_buffer << "\r\n"
       #reconstruction complete
-      log.debug [:response_reconstructed_header, @send_buffer]
+      event(:response_reconstruct_header, :data => @send_buffer)
     end
 
     # Adds a hash to {#header}

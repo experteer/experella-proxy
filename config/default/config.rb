@@ -62,3 +62,11 @@ set_timeout(30.0)
 set_error_pages(404, "404.html")
 set_error_pages(503, "503.html")
 
+#you can log things as you want:
+#set_on_event(lambda do |name,detail| 
+# if detail.delete(:error)
+#   Experella.config.logger.error([name,detail.inspect])
+# else
+#   Experella.config.logger.debug([name,detail.inspect])
+# end
+#end)

@@ -9,6 +9,10 @@ require 'spec_helper'
 describe ExperellaProxy do
   include POSIX::Spawn
   include ExperellaProxy::Globals
+  def log
+    ExperellaProxy.config.logger
+  end
+
   let(:echo_server) {
     File.expand_path("../../echo-server/echo_server.rb", __FILE__)
   }

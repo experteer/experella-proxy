@@ -1,6 +1,7 @@
 #Experella-Proxy
 
 [![Gem Version](https://badge.fury.io/rb/experella-proxy.png)](http://badge.fury.io/rb/experella-proxy)
+[![Build Status](https://travis-ci.org/experteer/experella-proxy.svg?branch=master)](https://travis-ci.org/experteer/experella-proxy)
 
 A balancing EventMachine reverse proxy based on [em-proxy](https://github.com/igrigorik/em-proxy). 
 See our [presentation](http://experteer.github.io/experella-proxy/index.html) for a more detailed overview.
@@ -119,8 +120,17 @@ backend         Takes an options hash defining a backend_server
 ```
 ###Logging
 
+You can set a logger but the proxy will just log some startup messages. See set_on_event how to see more.
 ```
 set_logger      specifies the Logger used by the program. The Logger must support debug/info/warn/error/fatal functions
+```
+
+###Events
+
+As a lot of thing are happening in the proxy in the appropriate level of logging is hard to find the proxy just emits some events. You can receive these events and do whatever you like to do (log, mail,....) by defining the event handler with:
+
+```
+set_on_event      specifies the event handler to be used. The handler is a lambda or Proc accepting a Symbol (name of the vent) and a hash of details.
 ```
 
 ###Proxy Server

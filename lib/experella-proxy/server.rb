@@ -27,8 +27,7 @@ module ExperellaProxy
     def run
 
       Proxy.start(options = {}) do |conn|
-
-        log.info msec + "new Connection @" + signature.to_s
+        event(:server_new_connection, :msec => msec, :signature => signature)
 
         # called on successful backend connection
         # backend is the name of the connected server

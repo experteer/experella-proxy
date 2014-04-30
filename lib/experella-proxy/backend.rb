@@ -14,7 +14,7 @@ module ExperellaProxy
     # Calls client {Connection} {Connection#connected} method
     #
     def connection_completed
-      log.debug [@name, :conn_complete]
+      event(:backend_connection_complete, :name => @name)
       @plexer.connected(@name)
       @connected.succeed
     end
@@ -27,7 +27,7 @@ module ExperellaProxy
     #
     # @param data [String] Opaque response data
     def receive_data(data)
-      log.debug [:receive_backend, @name]
+      event(:backend_receive_data, :from_backend => @name)
       @plexer.relay_from_backend(@name, data)
     end
 
@@ -35,14 +35,14 @@ module ExperellaProxy
     #
     # @param data [String] data to be send to the connected backend server
     def send(data)
-      log.debug [:send_backend, data]
+      event(:backend_send_data, :data => data)
       @connected.callback { send_data data }
     end
 
     # Notify upstream plexer that the backend server is done processing the request
     #
     def unbind
-      log.debug [@name, :unbind]
+       event(:backend_unbind, :name => @name)
       @plexer.unbind_backend(@name)
     end
 

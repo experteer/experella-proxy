@@ -46,7 +46,7 @@ module ExperellaProxy
 
     end
 
-    attr_reader :logger, :proxy, :timeout, :backends, :error_pages
+    attr_reader :logger, :proxy, :timeout, :backends, :error_pages, :on_event
 
     require 'logger'
 
@@ -58,6 +58,7 @@ module ExperellaProxy
       @backends=[]
       @proxy=[]
       @error_pages = {404 => "", 503 => ""}
+      @on_event=lambda { |name, data|}
       default_options={:timeout => 15.0, :logger => Logger.new($stdout)}
       options=options.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
       options=default_options.merge(options)
@@ -108,6 +109,9 @@ module ExperellaProxy
       @backends << backend_options
     end
 
+    def set_on_event(lambda)
+      @on_event=lambda
+    end
     # Sets the {Connection} timeout specified in the config file
     #
     # @param to [Float] timeout as float

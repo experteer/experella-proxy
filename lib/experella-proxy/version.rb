@@ -1,5 +1,7 @@
 module ExperellaProxy
   # ExperellaProxy Gemversion
+  # 0.0.10
+  # * no logging any more just firing events
   # 0.0.9
   # * added simplecov code coverage support.
   # * removed an unescaped duplicate debug log output
@@ -21,5 +23,5 @@ module ExperellaProxy
   # * added self-signed SSL certificate for TLS/HTTPS
   # * added config template init functionality
   #
-  VERSION = "0.0.9"
+  VERSION = "0.0.10"
 end

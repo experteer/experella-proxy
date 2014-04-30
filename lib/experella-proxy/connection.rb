@@ -91,7 +91,7 @@ module ExperellaProxy
     def close
       @unbound = true
       EM.next_tick(method(:close_connection_after_writing))
-      log.debug [msec, :unbind_client_after_writing, @signature.to_s]
+      event(:connection_close, :signature => @signature, :msec => msec)
     end
 
     # Connects self to a BackendServer object
@@ -132,9 +132,8 @@ module ExperellaProxy
     #
     # @param name [String] name of the Server used for logging
     def connected(name)
-      log.debug [msec, :connected]
       @on_connect.call(name) if @on_connect
-      log.info msec + 'on_connect'.ljust(12) + " @" + @signature.to_s + ' ' + name
+      event(:connection_connected, :msec => msec, :signature => @signature.to_s, :name => name)
       relay_to_server
     end
 
@@ -158,12 +157,12 @@ module ExperellaProxy
     #
     # @param data [String] Opaque incoming data
     def receive_data(data)
-      log.debug [msec, :connection, data]
+      event(:connection_receive_data_start, :msec => msec, :data => data)
       data = @on_data.call(data) if @on_data
       begin
         @request_parser << data
       rescue Http::Parser::Error
-        log.warn [msec, "Parser error caused by invalid request data", "@#{@signature}"]
+        event(:connection_receive_data_parser_error, :msec => msec, :signature => @signature, :error => true)
         # on error unbind request_parser object, so additional data doesn't get parsed anymore
         #
         # assigning a string to the parser variable, will cause incoming data to get buffered
@@ -173,8 +172,7 @@ module ExperellaProxy
         close
       end
 
-      log.info msec + 'on_data'.ljust(12) + " @" + @signature.to_s
-      log.debug data
+      event(:connection_receive_data_stop, :msec => msec, :data => data)
       relay_to_server
     end
 
@@ -186,8 +184,7 @@ module ExperellaProxy
     # @param name [String] name of the Server used for logging
     # @param data [String] opaque response data
     def relay_from_backend(name, data)
-      log.info msec + 'on_response'.ljust(12) + " @" + @signature.to_s + " from #{name}"
-      log.debug [msec, "#{name.inspect}", data]
+      event(:connection_relay_from_backend, :msec => msec, :data => data, :name => name)
       @got_response = true
       data = @on_response.call(name, data) if @on_response
       get_request.response << data
@@ -234,7 +231,7 @@ module ExperellaProxy
     # @see #receive_data
     def post_init
       if @options[:tls]
-        log.info [msec, "starting tls handshake @#{@signature}"]
+        event(:connection_tls_handshake_start, :msec => msec, :signature => @signature)
         start_tls(:private_key_file => @options[:private_key_file], :cert_chain_file => @options[:cert_chain_file], :verify_peer => false)
       end
     end
@@ -256,7 +253,7 @@ module ExperellaProxy
     # This callback exists because {#post_init} and connection_completed are not reliable for indicating when an
     # SSL/TLS connection is ready to have its certificate queried for.
     def ssl_handshake_completed
-      log.info [msec, "ssl_handshake_completed successful"]
+      event(:connection_tls_handshake_stop, :msec => msec, :signature => @signature)
     end
 
     # Called by backend connections whenever their connection is closed.
@@ -270,8 +267,8 @@ module ExperellaProxy
     #
     # @param name [String] name of the Server used for logging
     def unbind_backend(name)
+      event(:connection_unbind_backend, :msec => msec, :signature => @signature, :response => @got_response)
 
-      log.info msec + 'on_finish'.ljust(12) + " @" + @signature.to_s + " for #{name}" + " responded? " + @got_response.to_s
       if @on_finish
         @on_finish.call(name)
       end
@@ -280,11 +277,14 @@ module ExperellaProxy
 
       #if backend responded or client unbound connection (timeout probably triggers this too)
       if @got_response || @unbound
-        log.info msec + "Request done! @" + @signature.to_s
-        log.debug [msec, :backend_unbound, @requests.size, "keep alive? " + get_request.keep_alive.to_s]
+        event(:connection_unbind_backend_request_done,
+              :msec => msec,
+              :signature => @signature,
+              :size => @requests.size, :keep_alive => get_request.keep_alive.to_s)
+
         unless get_request.keep_alive
           close
-          log.debug [msec, :connection_closed, "close non persistent connection after writing"]
+          event(:connection_unbind_backend_close, :msec => msec, :signature => @signature)
         end
         @requests.shift #pop first element,request is done
         @got_response = false #reset response flag
@@ -301,12 +301,11 @@ module ExperellaProxy
         end
       else
         #handle no backend response here
-        log.error msec + "Error, backend didnt respond"
+        event(:connection_unbind_backend_error, :msec => msec, :error => true, :error_code => 503)
         error_page = "HTTP/1.1 503 Service unavailable\r\nContent-Length: #{config.error_pages[503].length}\r\nContent-Type: text/html;charset=utf-8\r\nConnection: close\r\n\r\n"
         unless get_request.header[:http_method].eql? "HEAD"
           error_page << config.error_pages[503]
         end
-        log.error [msec, :error_to_client, error_page]
         send_data error_page
 
         close
@@ -326,10 +325,10 @@ module ExperellaProxy
       @unbound = true
       @on_unbind.call if @on_unbind
 
-      log.info [msec, "Client connection unbound!  @" + @signature.to_s]
+      event(:connection_unbind_client, :msec => msec, :signature => @signature)
       #lazy evaluated. if first is true, second would cause a nil-pointer!
-      unless @requests.empty? || get_request.flushed?
-        log.debug [msec, @requests.inspect]
+      unless @requests.empty? || get_request.flushed? #what does this mean?
+        #log.debug [msec, @requests.inspect]
       end
       #delete conn from queue if still queued
       connection_manager.free_connection(self)
@@ -391,17 +390,16 @@ module ExperellaProxy
       backend = connection_manager.backend_available?(get_request)
 
       if backend.is_a?(BackendServer)
-        log.debug [msec + "Backend found"]
+        event(:connection_dispatch, :msec => msec, :type => :direct)
         connect_backendserver(backend)
       elsif backend == :queued
-        log.debug [msec + "pushed on queue: no backend available"]
+        event(:connection_dispatch, :msec => msec, :type => :queued)
       else
-        log.error msec + "Error, send client error message and unbind! No backend will match"
+        event(:connection_dispatch, :msec => msec, :type => :not_found, :error => true, :error_code => 404)
         error_page = "HTTP/1.1 404 Not Found\r\nContent-Length: #{config.error_pages[404].length}\r\nContent-Type: text/html;charset=utf-8\r\nConnection: close\r\n\r\n"
         unless get_request.header[:http_method].eql? "HEAD"
           error_page << config.error_pages[404]
         end
-        log.error [msec, :error_to_client, error_page]
         send_data error_page
         close
       end
@@ -413,13 +411,12 @@ module ExperellaProxy
       @request_parser.on_message_begin = proc do
         @requests.push(Request.new(self))
         # this log also triggers if client sends new keep-alive request before backend was unbound
-        log.info [msec + "pipelined request"] if @requests.length > 1
-        log.debug [msec, :message_begin]
+        event(:connection_http_parser_start, :msec => msec, :pipelined => (@requests.length>1))
       end
 
       #called when request headers are completely parsed (first \r\n\r\n triggers this)
       @request_parser.on_headers_complete = proc do |h|
-        log.info [msec, "new Request @#{@signature} Host: " + h["Host"] + " Request Path: " + @request_parser.request_url]
+        event(:connection_http_parser_headers_complete_start, :msec => msec, :signature => @signature, :request_path => @request_parser.request_url, :host => h["Host"])
         request = @requests.last
 
         # cache if client wants persistent connection
@@ -467,7 +464,7 @@ module ExperellaProxy
         if @request_parser.request_url.include? "http://"
           u = URI.parse(@request_parser.request_url)
           request.update_header(:Host => u.host)
-          log.debug [msec, "Host set to absolut host from request_url", u.host]
+          event(:connection_http_parser_headers_complete_absolute_host, :msec => msec, :signature => @signature, :host => u.host)
         else
           u = URI.parse("http://" + h["Host"] + @request_parser.request_url)
         end
@@ -482,7 +479,7 @@ module ExperellaProxy
           dispatch_request
         end
 
-        log.debug [msec, :on_header_complete, @requests.size]
+        event(:connection_http_parser_headers_complete_stop, :msec => msec, :requests => @requests.size)
       end
 
       @request_parser.on_body = proc do |chunk|
@@ -530,16 +527,15 @@ module ExperellaProxy
     # If the backend server is not yet connected, data is already buffered to be sent when the connection gets established
     #
     def relay_to_server
-      log.debug [:relay_to_server, "@" + @signature.to_s, @backend, @requests.empty?, get_request.flushed?, @server.nil?]
       if @backend && !@requests.empty? && !get_request.flushed? && !@server.nil?
         # save some memory here if logger isn't set on debug
-        if log.debug?
-          data = get_request.flush
-          @server.send_data data
-          log.debug [msec, :data_to_server_send, "@" + @signature.to_s, data]
-        else
-          @server.send_data get_request.flush
-        end
+        data = get_request.flush
+        @server.send_data data
+        event(:connection_relay_to_server, :msec => msec, :signature => @signature, :requests => @requests.size,
+                              :flushed => get_request.flushed?, :server_set => !!@server, :data => data)
+      else
+        event(:connection_relay_to_server, :msec => msec, :signature => @signature, :requests => @requests.size,
+                    :flushed => get_request.flushed?, :server_set => !!@server, :data => nil)
       end
     end
 
@@ -554,7 +550,7 @@ module ExperellaProxy
         if get_idle_time.nil?
           timer.cancel
         elsif get_idle_time > config.timeout
-          log.info [msec, :unbind_client, :timeout, "@" + @signature.to_s]
+          event(:connection_timeout, :msec => msec, :signature => @signature)
           timer.cancel
           close
         end

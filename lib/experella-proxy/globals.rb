@@ -19,11 +19,14 @@ module ExperellaProxy
       ExperellaProxy.config
     end
 
-    # Get the global logger
+    # Dispatch events to event handler
     #
-    # @return [Logger] logger set in config object
-    def log
-      ExperellaProxy.config.logger
+    # @param [Symbol] name is the name of the event
+    # @param [Hash] details contains details of the event
+    # see ExperellaProxy::Configuration#on_event
+
+    def event(name,details={})
+      config.on_event.call(name,details)
     end
 
     # Get the global connection manager
@@ -33,5 +36,8 @@ module ExperellaProxy
       ExperellaProxy.connection_manager
     end
 
+    def logger
+      config.logger
+    end
   end
 end
