@@ -85,22 +85,23 @@ i.e. if you want to route an inimitable request to an unique backend, you have t
 
 ```
 backend         Takes an options hash defining a backend_server
-    required keys =>    :host   Host address of the Server, can be IP or domain, String
-                        :port   Port of the Server, Integervalue as String
+  required keys =>   :host   Host address of the Server, can be IP or domain, String
+                     :port   Port of the Server, Integervalue as String
 
-    optional keys =>    :name   Name of the Server used in the Logger and Cashing, String
-                                Will default to #{host}:#{port} but needs to be unique, though theoretical there can be
-                                multiple servers with the same host:port value pair!
+  optional keys =>   :name   Name of the Server used in the Logger and Cashing, String
+                             Will default to #{host}:#{port} but needs to be unique, though theoretical 
+                             there can be multiple servers with the same host:port value pair!
 
-                        :concurrency max Number of concurrent connections, Integervalue as String, Default is 1
+                     :concurrency max Number of concurrent connections, Integervalue as String, Default is 1
 
-                        :accepts    Hash containing keys matching HTTP headers or URI :path, :port, :query
-                                    Values are Regexp as Strings or as Regex, use ^((?!pattern).)*$ to negate matching
-                                    Care: Will match any Header/value pairs not defined in the accepts Hash
+                     :accepts     Hash containing keys matching HTTP headers or URI :path, :port, :query
+                                  Values are Regexp as Strings or as Regex, use ^((?!pattern).)*$ to negate matching
+                                  Care: Will match any Header/value pairs not defined in the accepts Hash
+                                  Optionally you can provide a lambda with your own routing logic
 
-                        :mangle     Hash containing keys matching HTTP headers. Values can be callable block or Strings
-                                    Mangle modifies the header value based on the given block
-                                    or replaces the header value with the String
+                     :mangle      Hash containing keys matching HTTP headers. Values can be callable block or Strings
+                                  Mangle modifies the header value based on the given block
+                                  or replaces the header value with the String
 ```
 
 ####Example
@@ -121,16 +122,19 @@ backend         Takes an options hash defining a backend_server
 ###Logging
 
 You can set a logger but the proxy will just log some startup messages. See set_on_event how to see more.
+
 ```
-set_logger      specifies the Logger used by the program. The Logger must support debug/info/warn/error/fatal functions
+set_logger      specifies the Logger used by the program.
+				The Logger must support debug/info/warn/error/fatal functions
 ```
 
 ###Events
 
-As a lot of thing are happening in the proxy in the appropriate level of logging is hard to find the proxy just emits some events. You can receive these events and do whatever you like to do (log, mail,....) by defining the event handler with:
+As a lot of things are happening in the proxy the appropriate level of logging is hard to find. So the proxy just emits some events. You can receive these events and do whatever you like to do (log, mail,....) by defining the event handler with:
 
 ```
-set_on_event      specifies the event handler to be used. The handler is a lambda or Proc accepting a Symbol (name of the vent) and a hash of details.
+set_on_event     specifies the event handler to be used. The handler is a lambda or Proc
+				 accepting a Symbol (name of the event) and a hash of details.
 ```
 
 ###Proxy Server
@@ -139,7 +143,7 @@ set_on_event      specifies the event handler to be used. The handler is a lambd
 set_proxy       Add proxy as Hash with :host => "string-ip/domain", :port => Fixnum, :options => Hash
                 The proxy will listen on every host:port hash added with this function.
                 :options can activate :tls with given file paths to :private_key_file and :cert_chain_file
-                         file paths are relative to the config file directory
+                file paths are relative to the config file directory
 ```
 ####Example
 
