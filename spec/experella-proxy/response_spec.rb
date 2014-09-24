@@ -36,9 +36,25 @@ describe ExperellaProxy::Response do
       data = response.flush
       data.start_with?("HTTP/1.1 500 Internal Server Error\r\n").should be_true
       data.should include("Connection: keep-alive\r\n")
-      data.should include("Via-X: Lukas,Amy,George\r\n")
+      data.should include("Via-X: Lukas\r\n")
+      data.should include("Via-X: Amy\r\n")
+      data.should include("Via-X: George\r\n")
+      data.end_with?("\r\n\r\n").should be_true
+    end
+
+    it "keeps folded/unfolded headers as is" do
+      response.update_header("Via" => "1.1 experella1, 1.1 experella2, 1.1 experella3",
+                             :"Via-X"     => %w(Lukas Amy George))
+      response.reconstruct_header
+      data = response.flush
+      data.should include("1.1 experella1, 1.1 experella2, 1.1 experella3\r\n")
+      data.end_with?("\r\n\r\n").should be_true
+      data.should include("Via-X: Lukas\r\n")
+      data.should include("Via-X: Amy\r\n")
+      data.should include("Via-X: George\r\n")
       data.end_with?("\r\n\r\n").should be_true
     end
   end
+
 
 end

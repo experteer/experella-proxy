@@ -18,3 +18,7 @@ Features:
     * detect disconnected backends
 - improve middleware support
 - SPDY
+
+Specs:
+
+- better http client which can send multiple headers with same name

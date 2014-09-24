@@ -485,5 +485,27 @@ describe ExperellaProxy do
       end
     end
 
+    it "appends Via header to requests" do
+      log.info "appends Via header to requests"
+      EM.epoll
+      EM.run do
+        lambda do
+          EventMachine.add_timer(0.2) do
+            http = EventMachine::HttpRequest.new("http://#{config.proxy[0][:host]}:#{config.proxy[0][:port]}"
+            ).get(:connect_timeout => 1, :head => { "Host" => "experella.com", "Via" => "rspec, em-http"})
+            http.errback {
+              EventMachine.stop
+              raise "http request failed"
+            }
+            http.callback {
+              http.response.should start_with "you sent: "
+              http.response.should include "Via: rspec, em-http, 1.1 experella"
+              EventMachine.stop
+            }
+          end
+        end.should_not raise_error
+      end
+    end
+
   end
 end
