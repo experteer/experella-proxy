@@ -80,7 +80,23 @@ describe ExperellaProxy::Request do
       data = request.flush
       data.start_with?("GET /index HTTP/1.1\r\n").should be_true
       data.should include("Connection: keep-alive\r\n")
-      data.should include("Via-X: Lukas,Amy,George\r\n")
+      data.should include("Via-X: Lukas\r\n")
+      data.should include("Via-X: Amy\r\n")
+      data.should include("Via-X: George\r\n")
+      data.end_with?("\r\n\r\n").should be_true
+    end
+
+    it "keeps folded/unfolded headers as is" do
+      request.update_header(:http_method => "GET", :request_url => "/index", "Host" => "localhost",
+                            "Connection" => "keep-alive", "Via" => "1.1 experella1, 1.1 experella2, 1.1 experella3",
+                             :"Via-X" => %w(Lukas Amy George))
+      request.reconstruct_header
+      data = request.flush
+      data.should include("1.1 experella1, 1.1 experella2, 1.1 experella3\r\n")
+      data.end_with?("\r\n\r\n").should be_true
+      data.should include("Via-X: Lukas\r\n")
+      data.should include("Via-X: Amy\r\n")
+      data.should include("Via-X: George\r\n")
       data.end_with?("\r\n\r\n").should be_true
     end
   end

@@ -448,7 +448,7 @@ module ExperellaProxy
         if via.nil?
           via = "1.1 experella"
         else
-          via << "1.1 experella"
+          via += ", 1.1 experella"
         end
         request.update_header(:Via => via)
 

@@ -72,6 +72,8 @@ module ExperellaProxy
     #
     # Reconstructed response must be a valid response according to the HTTP Protocol
     #
+    # Folded/unfolded headers will go out as they came in
+    #
     # Header order is determined by {#header}.each
     #
     def reconstruct_header
@@ -82,16 +84,13 @@ module ExperellaProxy
       @send_buffer << HTTP_STATUS_CODES[@status_code] + "\r\n"
       # header fields
       @header.each do |key, value|
-        @send_buffer << key.to_s + ": "
-        if value.is_a?(Array)
-          @send_buffer << value.shift
-          until value.empty?
-            @send_buffer << "," + value.shift
-          end
-        else
-          @send_buffer << value
+        key_val = key.to_s + ": "
+        values = Array(value)
+        values.each do |val|
+          @send_buffer << key_val
+          @send_buffer << val.strip
+          @send_buffer << "\r\n"
         end
-        @send_buffer << "\r\n"
       end
       @send_buffer << "\r\n"
       # reconstruction complete
