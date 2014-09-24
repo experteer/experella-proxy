@@ -1,5 +1,7 @@
 module ExperellaProxy
   # ExperellaProxy Gemversion
+  # 0.0.13
+  #  * headers are no longer folded if they came unfolded but headers stay as is
   # 0.0.12.WIP
   #  * rubocop cleanup
   # 0.0.11
@@ -29,5 +31,5 @@ module ExperellaProxy
   # * added self-signed SSL certificate for TLS/HTTPS
   # * added config template init functionality
   #
-  VERSION = "0.0.12.WIP"
+  VERSION = "0.0.13"
 end
