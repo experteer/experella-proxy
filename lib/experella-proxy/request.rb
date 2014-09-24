@@ -60,6 +60,8 @@ module ExperellaProxy
     #
     # Reconstructed request must be a valid request according to the HTTP Protocol
     #
+    # Folded/unfolded headers will go out as they came in
+    #
     # First Header after Startline will always be "Host: ", after that order is determined by {#header}.each
     #
     def reconstruct_header
@@ -74,16 +76,13 @@ module ExperellaProxy
       # header fields
       @header.each do |key, value|
         unless  key == :http_method || key == :request_url || key == :http_version || key == :Host # exclude startline parameters
-          @send_buffer << key.to_s + ": "
-          if value.is_a?(Array)
-            @send_buffer << value.shift
-            until value.empty?
-              @send_buffer << "," + value.shift
-            end
-          else
-            @send_buffer << value
+          key_val = key.to_s + ": "
+          values = Array(value)
+          values.each do |val|
+            @send_buffer << key_val
+            @send_buffer << val.strip
+            @send_buffer << "\r\n"
           end
-          @send_buffer << "\r\n"
         end
       end
       @send_buffer << "\r\n"
@@ -98,7 +97,7 @@ module ExperellaProxy
     #
     # @param hsh [Hash] hash with HTTP header Key:Value pairs
     def update_header(hsh)
-      hsh = hsh.reduce({}){ |memo, (k, v)| memo[k.to_sym] = v; memo }
+      hsh = hsh.reduce({}) { |memo, (k, v)| memo[k.to_sym] = v; memo }
       @header.update(hsh)
     end
   end
