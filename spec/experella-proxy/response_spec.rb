@@ -62,7 +62,7 @@ describe ExperellaProxy::Response do
                                :"Via-X"     => %w(Lukas Amy George))
         response.reconstruct_header
         data = response.flush
-        data.start_with?("HTTP/1.1 99 \r\n").should be_true
+        data.start_with?("HTTP/1.1 99 Status-Code unknown to experella\r\n").should be_true
       end
     end
   end
