@@ -234,6 +234,17 @@ Additionally you can activate simplecov code coverage analysis for specs by sett
 $> COVERAGE=true rake spec
 ```
 
+If you get error: `'start_tcp_server': no acceptor (port is in use or requires root privileges) (RuntimeError)`
+make sure you aliased 127.0.0.2, 127.0.0.10 and 127.0.0.11 to 127.0.0.1.
+
+On OS X you can do it by executing following commands:
+
+```
+sudo ifconfig lo0 alias 127.0.0.2 up
+sudo ifconfig lo0 alias 127.0.0.10 up
+sudo ifconfig lo0 alias 127.0.0.11 up
+```
+
 ## Additional Information
 
 + [em-proxy](https://github.com/igrigorik/em-proxy)
