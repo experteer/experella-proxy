@@ -54,6 +54,17 @@ describe ExperellaProxy::Response do
       data.should include("Via-X: George\r\n")
       data.end_with?("\r\n\r\n").should be_true
     end
+
+    context "when status code does not exist in HTTP_STATUS_CODES" do
+      it "returns Uknown Error" do
+        response.instance_variable_set(:@status_code, 99)
+        response.update_header("Connection" => "keep-alive",
+                               :"Via-X"     => %w(Lukas Amy George))
+        response.reconstruct_header
+        data = response.flush
+        data.start_with?("HTTP/1.1 99 \r\n").should be_true
+      end
+    end
   end
 
 
