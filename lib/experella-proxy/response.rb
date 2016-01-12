@@ -81,7 +81,7 @@ module ExperellaProxy
       # start line
       @send_buffer << "HTTP/1.1 "
       @send_buffer << @status_code.to_s + ' '
-      @send_buffer << HTTP_STATUS_CODES[@status_code] + "\r\n"
+      @send_buffer << HTTP_STATUS_CODES.fetch(@status_code, "Status-Code unknown to experella") + "\r\n"
       # header fields
       @header.each do |key, value|
         key_val = key.to_s + ": "
