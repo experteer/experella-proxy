@@ -17,6 +17,7 @@ Supports:
 + Request header manipulation completely configurable for each server
 + Daemonized control using ruby [Daemons](http://daemons.rubyforge.org/)
 + TLS support and a default self-signed ssl certification
++ Full request and response logging at practically any point in the proxy
 
 Proxy uses [http_parser](https://github.com/tmm1/http_parser.rb) to parse http data and is thereby subject to the parsers restrictions
 
@@ -24,6 +25,11 @@ The proxy is build for low proxy to server latency and does not support persiste
 as it can severely influence proxy performance overhead.
 
 It balances for every single http-request and not per client/connection.
+
+The proxy is also an excellent man-in-the-middle logger. You can setup log events for http requests and
+ responses (partially, e.g. only specific headers or even full message content) at any point of  transmission
+ and thereby see what the client is sending, what the server is receiving and vice versa.
+ Checkout how to setup events for that.
 
 ##Install as Gem
 
@@ -233,6 +239,10 @@ Additionally you can activate simplecov code coverage analysis for specs by sett
 ```
 $> COVERAGE=true rake spec
 ```
+
+## Troubleshooting
+
+Reported by [Lucas Mendelowski](https://github.com/lowski):
 
 If you get error: `'start_tcp_server': no acceptor (port is in use or requires root privileges) (RuntimeError)`
 make sure you aliased 127.0.0.2, 127.0.0.10 and 127.0.0.11 to 127.0.0.1.
