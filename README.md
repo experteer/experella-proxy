@@ -1,4 +1,4 @@
-#Experella-Proxy
+# Experella-Proxy
 
 [![Gem Version](https://badge.fury.io/rb/experella-proxy.png)](http://badge.fury.io/rb/experella-proxy)
 [![Build Status](https://travis-ci.org/experteer/experella-proxy.svg?branch=master)](https://travis-ci.org/experteer/experella-proxy)
@@ -31,7 +31,7 @@ The proxy is also an excellent man-in-the-middle logger. You can setup log event
  and thereby see what the client is sending, what the server is receiving and vice versa.
  Checkout how to setup events for that.
 
-##Install as Gem
+## Install as Gem
 
 To use experella-proxy simply install it as a gem.
 
@@ -39,7 +39,7 @@ To use experella-proxy simply install it as a gem.
 gem install experella-proxy
 ```
 
-##How to start
+## How to start
 
 Experella-Proxy is controlled by ruby Daemons default commands (run, start, restart, stop) and provides
 a template config initialization command (init destination).
@@ -77,13 +77,13 @@ Running ports below 1024 probably requires "rvmsudo" to run properly
 $> BASE_PORT=3000 experella-proxy start -- --config=~/proxy/config.rb
 ```
 
-##Config file
+## Config file
 
 You need to provide a valid config file for the proxy to run.
 
 Config files use a ruby DSL with the following options
 
-###Backend Server
+### Backend Server
 
 Each server is configured independent of other servers, so each desired routing dependency has to be added manually.
 i.e. if you want to route an inimitable request to an unique backend, you have to exclude that match in all other servers.
@@ -110,7 +110,7 @@ backend         Takes an options hash defining a backend_server
                                   or replaces the header value with the String
 ```
 
-####Example
+#### Example
 
 ```ruby
     backend(:name => "Srv1", :host => "192.168.0.10", :port => "80", :concurrency => "1",
@@ -125,7 +125,7 @@ backend         Takes an options hash defining a backend_server
               }
     )
 ```
-###Logging
+### Logging
 
 You can set a logger but the proxy will just log some startup messages. See set_on_event how to see more.
 
@@ -134,7 +134,7 @@ set_logger      specifies the Logger used by the program.
 				The Logger must support debug/info/warn/error/fatal functions
 ```
 
-###Events
+### Events
 
 As a lot of things are happening in the proxy the appropriate level of logging is hard to find. So the proxy just emits some events. You can receive these events and do whatever you like to do (log, mail,....) by defining the event handler with:
 
@@ -143,7 +143,7 @@ set_on_event     specifies the event handler to be used. The handler is a lambda
 				 accepting a Symbol (name of the event) and a hash of details.
 ```
 
-###Proxy Server
+### Proxy Server
 
 ```
 set_proxy       Add proxy as Hash with :host => "string-ip/domain", :port => Fixnum, :options => Hash
@@ -151,7 +151,7 @@ set_proxy       Add proxy as Hash with :host => "string-ip/domain", :port => Fix
                 :options can activate :tls with given file paths to :private_key_file and :cert_chain_file
                 file paths are relative to the config file directory
 ```
-####Example
+#### Example
 
 ```ruby
     set_proxy(:host => "127.0.0.1", :port => 8080)
@@ -163,13 +163,13 @@ set_proxy       Add proxy as Hash with :host => "string-ip/domain", :port => Fix
     set_proxy(:host => "192.168.100.168", :port => 6666)
 ```
 
-###Connection timeout
+### Connection timeout
 
 ```
 set_timeout     Time as float when an idle persistent connection gets closed (no receive/send events occured)
 ```
 
-###Error pages
+### Error pages
 
 ```
 set_error_pages Add html error-pages to the proxy, requires 2 arguments
@@ -178,7 +178,7 @@ set_error_pages Add html error-pages to the proxy, requires 2 arguments
                 Currently 404 and 503 error codes are supported
 ```
 
-####Example
+#### Example
 
 ```ruby
     set_error_pages(404, "404.html")
@@ -266,4 +266,4 @@ sudo ifconfig lo0 alias 127.0.0.11 up
 
 ## License
 
-MIT License - Copyright (c) 2014 Dennis-Florian Herr @Experteer GmbH
+MIT License - Copyright (c) 2014 [Dennis-Florian Herr](https://github.com/dfherr) @Experteer GmbH
