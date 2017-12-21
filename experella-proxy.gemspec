@@ -26,7 +26,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "sinatra", "1.4.3"
   spec.add_development_dependency "thin", "~> 1.5.1"
   # documentation tool
-  spec.add_development_dependency "yard", "~> 0.8.7.3"
+  spec.add_development_dependency "yard", "~> 0.9.12"
   spec.add_development_dependency "redcarpet", "~> 2.3.0"
   # code coverage
   spec.add_development_dependency "simplecov", "~> 0.7.1"
